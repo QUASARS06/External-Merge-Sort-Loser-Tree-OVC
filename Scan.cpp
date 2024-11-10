@@ -1,7 +1,7 @@
 #include "Scan.h"
 
 # define NUM_OF_COLS 4
-# define COL_VAL_DOMAIN 1000 
+# define COL_VAL_DOMAIN 6 
 
 // Scan Constructor
 ScanPlan::ScanPlan(char const *const name, RowCount const count) : Plan(name), _count(count)
