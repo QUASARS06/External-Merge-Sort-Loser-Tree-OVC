@@ -1,5 +1,6 @@
 #include "Iterator.h"
 #include "DRAM.h"
+#include "HDD.h"
 
 class SortPlan : public Plan
 {
@@ -25,4 +26,5 @@ private:
 	Iterator * const _input;
 	RowCount _consumed, _produced;
 	DRAM * dram;
+	HDD * hdd;
 }; // class SortIterator

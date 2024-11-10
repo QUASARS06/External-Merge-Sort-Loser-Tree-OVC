@@ -12,15 +12,15 @@ SCRS=
 # headers and code sources
 HDRS=	defs.h \
 		Iterator.h Scan.h Filter.h Sort.h Witness.h \
-		DRAM.h InternalQuickSort.h
+		DRAM.h HDD.h InternalQuickSort.h
 SRCS=	defs.cpp Assert.cpp Test.cpp \
 		Iterator.cpp Scan.cpp Filter.cpp Sort.cpp Witness.cpp \
-		DRAM.cpp InternalQuickSort.cpp
+		DRAM.cpp HDD.cpp InternalQuickSort.cpp
 
 # compilation targets
 OBJS=	defs.o Assert.o Test.o \
 		Iterator.o Scan.o Filter.o Sort.o Witness.o \
-		DRAM.o InternalQuickSort.o
+		DRAM.o HDD.o InternalQuickSort.o
 
 # RCS assists
 REV=-q -f
@@ -44,6 +44,7 @@ Filter.o : Filter.h
 Sort.o : Sort.h
 Witness.o : Witness.h
 DRAM.o : DRAM.h
+HDD.o : HDD.h
 InternalQuickSort.o: InternalQuickSort.h
 
 list : Makefile

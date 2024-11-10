@@ -40,3 +40,11 @@ void DRAM::printAllRecords() {
 void DRAM::sortRecords() {
     quickSort(records, 0, records.size() -1);
 }
+
+std::vector<Row> DRAM::getAllRecords() {
+    return records;
+}
+
+void DRAM::flushRAM() {
+    records.clear();
+}

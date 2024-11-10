@@ -11,6 +11,8 @@ public:
     bool addRecord(Row record);
     void printAllRecords();
     void sortRecords();
+    std::vector<Row> getAllRecords();
+    void flushRAM();
 
 private:
     std::vector<Row> records;

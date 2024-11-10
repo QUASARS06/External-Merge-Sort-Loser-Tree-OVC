@@ -24,14 +24,13 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 {
 	TRACE (true);
 	dram = new DRAM(_plan->ram_capacity);
+	hdd = new HDD();
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
-		printf("--------------------- ROW ---------------------\n");
-		if(dram->addRecord(row)) {
-			printf("------------------------------------------ADDING to RAM...\n");
-		} else {
-			printf("------------------------------------------RAM FULL\n");
-			dram->printAllRecords();
+		if(!dram->addRecord(row)) {
+			dram->sortRecords();
+			hdd->writeSortedRuns(dram->getAllRecords());
+			dram->flushRAM();
 		}
 
 		++ _consumed;
@@ -59,12 +58,13 @@ SortIterator::~SortIterator ()
 bool SortIterator::next (Row & row)
 {
 	TRACE (true);
-	printf("BEFORE: \n");
-	dram->printAllRecords();
-	dram->sortRecords();
+	// printf("BEFORE: \n");
+	// dram->printAllRecords();
+	// dram->sortRecords();
 
-	printf("AFTER: \n");
-	dram->printAllRecords();
+	// printf("AFTER: \n");
+	// dram->printAllRecords();
+	hdd->printSortedRuns();
 
 	if (_produced >= _consumed)  return false;
 
