@@ -1,7 +1,7 @@
 #include "Sort.h"
 
-SortPlan::SortPlan (char const * const name, Plan * const input)
-	: Plan (name), _input (input)
+SortPlan::SortPlan (char const * const name, int ram_capacity, Plan * const input)
+	: Plan (name), _input (input), ram_capacity (ram_capacity)
 {
 	TRACE (true);
 } // SortPlan::SortPlan
@@ -23,7 +23,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	_consumed (0), _produced (0)
 {
 	TRACE (true);
-	dram = new DRAM();
+	dram = new DRAM(_plan->ram_capacity);
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
 		printf("--------------------- ROW ---------------------\n");

@@ -3,7 +3,9 @@
 #include "Iterator.h"
 using namespace std;
 
-DRAM::DRAM () {
+DRAM::DRAM (int capacity)
+    : capacity (capacity)
+{
 
 }
 
@@ -12,7 +14,7 @@ DRAM::~DRAM () {
 }
 
 bool DRAM::addRecord(Row record) {
-    if(records.size() < 5) {
+    if(records.size() < capacity) {
         records.push_back(record);
         return true;
     }

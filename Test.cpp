@@ -13,11 +13,14 @@ int main(int argc, char *argv[])
 	// filter variables
 	int col_num = 0;
 	int value = 5;
-	char operator_type = '<';
+	char operator_type = '>';
+
+	// RAM
+	int ram_capacity = 3;	// number of records that can be stored in RAM
 
 	Plan *const plan =
 		new WitnessPlan ("output",
-				new SortPlan ("*** The main thing! ***",
+				new SortPlan ("*** The main thing! ***", ram_capacity,
 					new WitnessPlan ("input",
 						new FilterPlan ("half", col_num, value, operator_type,
 							new ScanPlan ("source", 13)
