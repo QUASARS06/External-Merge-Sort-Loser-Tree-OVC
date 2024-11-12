@@ -13,6 +13,8 @@ public:
     void sortRecords();
     std::vector<Row> getAllRecords();
     void flushRAM();
+    bool isFull();
+    void computeOVC();
 
 private:
     std::vector<Row> records;

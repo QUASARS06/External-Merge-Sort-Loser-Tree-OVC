@@ -22,12 +22,13 @@ void printArray1(std::vector<int> arr) {
         printf("%d", arr[i]);
         if(i < arr.size()-1) printf(", ");
     }
-    printf("]\n");
+    printf("]");
 }
 
 void printAllRecords1(std::vector<Row> records) {
     for(int i=0 ; i < records.size() ; i++) {
         printArray1(records[i].columns);
+        printf("  O = %d | OV = %d\n", records[i].offset, records[i].offsetValue);
     }
 }
 

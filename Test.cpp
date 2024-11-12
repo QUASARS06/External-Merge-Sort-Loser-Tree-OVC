@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
 	// filter variables
 	int col_num = 0;
-	int value = 5;
+	int value = 0;
 	char operator_type = '>';
 
 	// RAM

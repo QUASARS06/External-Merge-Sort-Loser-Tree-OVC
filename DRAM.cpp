@@ -48,3 +48,39 @@ std::vector<Row> DRAM::getAllRecords() {
 void DRAM::flushRAM() {
     records.clear();
 }
+
+bool DRAM::isFull() {
+    return records.size() >= capacity;
+}
+
+void DRAM::computeOVC() {
+
+    Row prevRow;
+    int offset;
+    int offsetValue;
+
+    for(int i=0 ; i < records.size() ; i++) {
+        Row& currRow = records[i];
+        offset = -1;
+        offsetValue = 0;
+
+        if(i == 0) {
+            offset = currRow.columns.size() - 1;
+            offsetValue = currRow.columns[0];
+        } else {
+            for (int j = 0; j < currRow.columns.size(); j++) {
+                if (currRow.columns[j] != prevRow.columns[j]) {
+                    offset = j;
+                    offsetValue = currRow.columns[j];
+                    break;
+                }
+            }
+        }
+        
+        currRow.offset = offset;
+        currRow.offsetValue = offsetValue;
+
+        prevRow = currRow;
+    }
+
+}

@@ -11,7 +11,9 @@ public:
 	Row();
 	virtual ~Row();
 	std::vector<int> columns;
-	// ...
+	int offset;
+	int offsetValue;
+
 private:
 	// ...
 }; // class Row
