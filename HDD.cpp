@@ -39,3 +39,11 @@ void HDD::printSortedRuns() {
         printf("\n");
     }
 }
+
+int HDD::getNumOfSortedRuns() {
+    return sorted_runs.size();
+}
+
+std::vector<std::vector<Row> > HDD::getSortedRuns() {
+    return sorted_runs;
+}

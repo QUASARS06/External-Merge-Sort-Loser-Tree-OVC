@@ -7,7 +7,7 @@ Row::Row ()
 
 Row::~Row ()
 {
-	TRACE (true);
+	TRACE (false);
 } // Row::~Row
 
 Plan::Plan (char const * const name) : _name (name)

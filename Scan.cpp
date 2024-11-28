@@ -49,6 +49,8 @@ bool ScanIterator::next(Row &row)
     }
 
 	row.columns = arr;
+	row.offset = 0;
+	row.offsetValue = arr[0];
 
 	++_count;
 	return true;

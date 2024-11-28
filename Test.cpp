@@ -12,18 +12,23 @@ int main(int argc, char *argv[])
 
 	// filter variables
 	int col_num = 0;
-	int value = 0;
+	int value = -1;
 	char operator_type = '>';
 
 	// RAM
-	int ram_capacity = 3;	// number of records that can be stored in RAM
+	int ram_capacity = 5;	// number of records that can be stored in RAM
+	int page_size = 5;
+
+	int num_of_records = 20;
+
+	std::srand(42);
 
 	Plan *const plan =
 		new WitnessPlan ("output",
-				new SortPlan ("*** The main thing! ***", ram_capacity,
+				new SortPlan ("*** The main thing! ***", ram_capacity, page_size,
 					new WitnessPlan ("input",
 						new FilterPlan ("half", col_num, value, operator_type,
-							new ScanPlan ("source", 13)
+							new ScanPlan ("source", num_of_records)
 						)
 					)
 				)

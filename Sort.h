@@ -6,12 +6,13 @@ class SortPlan : public Plan
 {
 	friend class SortIterator;
 public:
-	SortPlan (char const * const name, int ram_capacity, Plan * const input);
+	SortPlan (char const * const name, int ram_capacity, int page_size, Plan * const input);
 	~SortPlan ();
 	Iterator * init () const;
 private:
 	Plan * const _input;
 	int ram_capacity;
+	int page_size;
 }; // class SortPlan
 
 class SortIterator : public Iterator

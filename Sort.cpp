@@ -1,7 +1,7 @@
 #include "Sort.h"
 
-SortPlan::SortPlan (char const * const name, int ram_capacity, Plan * const input)
-	: Plan (name), _input (input), ram_capacity (ram_capacity)
+SortPlan::SortPlan (char const * const name, int ram_capacity, int page_size, Plan * const input)
+	: Plan (name), _input (input), ram_capacity (ram_capacity), page_size (page_size)
 {
 	TRACE (true);
 } // SortPlan::SortPlan
@@ -23,7 +23,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	_consumed (0), _produced (0)
 {
 	TRACE (true);
-	dram = new DRAM(_plan->ram_capacity);
+	dram = new DRAM(_plan->ram_capacity, _plan->page_size);
 	hdd = new HDD();
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
@@ -32,8 +32,12 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 		if(dram->isFull()) {
 			
+			//printf("Before Sort\n");
+			//dram->printAllRecords();
 			dram->sortRecords();
-			dram->computeOVC();
+
+			//printf("After Sort\n");
+			//dram->printAllRecords();
 			hdd->writeSortedRuns(dram->getAllRecords());
 			dram->flushRAM();
 
@@ -51,7 +55,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 SortIterator::~SortIterator ()
 {
-	TRACE (true);
+	TRACE (false);
 
 	printf("------------------------------------------------------------------------\n");
 	traceprintf ("%s produced %lu of %lu rows\n",
@@ -64,13 +68,23 @@ SortIterator::~SortIterator ()
 bool SortIterator::next (Row & row)
 {
 	TRACE (true);
-	// printf("BEFORE: \n");
-	// dram->printAllRecords();
-	// dram->sortRecords();
+	printf("Printing HDD\n");
+	// hdd->printSortedRuns();
+	//dram->mergeSortedRuns(hdd->getSortedRuns());
+	
+	// while(hdd->getNumOfSortedRuns() != 1) {
 
-	// printf("AFTER: \n");
-	// dram->printAllRecords();
-	//hdd->printSortedRuns();
+	// 	// pull from hdd and load into ram and merge and write back to hdd
+	// 	// Use this formula to generate initial runs => ((W-2) % (F-1) + 2)
+
+		
+		
+	// }
+
+	// this means the number of sorted runs is less than the Fan-In
+	// Hence now on each next() request we can pop the head of the tree of loser to return record
+
+	// dram->popLoserTreeHead();
 
 	if (_produced >= _consumed)  return false;
 
@@ -80,5 +94,5 @@ bool SortIterator::next (Row & row)
 
 void SortIterator::free (Row & row)
 {
-	TRACE (true);
+	TRACE (false);
 } // SortIterator::free

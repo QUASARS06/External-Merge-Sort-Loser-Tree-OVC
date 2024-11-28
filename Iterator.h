@@ -10,9 +10,15 @@ class Row
 public:
 	Row();
 	virtual ~Row();
+
+	Row(const std::vector<int>& columns, int offset, int offsetValue);
+	
 	std::vector<int> columns;
 	int offset;
 	int offsetValue;
+
+	bool isLessThan(const Row& other) const;
+    std::string findOVC(const Row& winner) const;
 
 private:
 	// ...

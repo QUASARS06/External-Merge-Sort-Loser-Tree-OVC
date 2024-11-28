@@ -12,15 +12,15 @@ SCRS=
 # headers and code sources
 HDRS=	defs.h \
 		Iterator.h Scan.h Filter.h Sort.h Witness.h \
-		DRAM.h HDD.h InternalQuickSort.h
+		DRAM.h HDD.h TreeOfLosers.h
 SRCS=	defs.cpp Assert.cpp Test.cpp \
 		Iterator.cpp Scan.cpp Filter.cpp Sort.cpp Witness.cpp \
-		DRAM.cpp HDD.cpp InternalQuickSort.cpp
+		DRAM.cpp HDD.cpp TreeOfLosers.cpp
 
 # compilation targets
 OBJS=	defs.o Assert.o Test.o \
 		Iterator.o Scan.o Filter.o Sort.o Witness.o \
-		DRAM.o HDD.o InternalQuickSort.o
+		DRAM.o HDD.o TreeOfLosers.o
 
 # RCS assists
 REV=-q -f
@@ -45,7 +45,7 @@ Sort.o : Sort.h
 Witness.o : Witness.h
 DRAM.o : DRAM.h
 HDD.o : HDD.h
-InternalQuickSort.o: InternalQuickSort.h
+TreeOfLosers.o: TreeOfLosers.h
 
 list : Makefile
 	echo Makefile $(HDRS) $(SRCS) $(DOCS) $(SCRS) > list
