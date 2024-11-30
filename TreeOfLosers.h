@@ -13,21 +13,25 @@ public:
 
 class TreeOfLosers {
 private:
-    std::vector<std::vector<Row> > sortedRuns;  // Input sorted runs
+    std::vector<Row>& sortedRuns;  // Input sorted runs
     std::vector<LoserTreeNode> loserTree;      // Tree of losers
-    std::vector<int> currentIndices;           // Current index in each run
+    std::vector<int>& currentIndices;           // Current index in each run
 
     int loserTreeHeight;
     int numOfLoserNodes;
     int numOfRuns;
     int treeSize;
+    int pageSize;
+    int sortedRunSize;
+
+    int& lastWinnerRunIdx;
 
     Row& getRow(int runIndex);
     int init(int currNodeIdx);
     void updateTree(int competitorRunIndex);
 
 public:
-    TreeOfLosers(const std::vector<std::vector<Row> > sortedRuns);
+    TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, std::vector<int>& currentIndices, int& lastWinnerRunIdx);
     void initializeTree();
     Row getNextRow();
 };

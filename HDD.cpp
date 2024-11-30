@@ -27,6 +27,7 @@ void printArray1(std::vector<int> arr) {
 
 void printAllRecords1(std::vector<Row> records) {
     for(int i=0 ; i < records.size() ; i++) {
+        printf("%d -> ", i);
         printArray1(records[i].columns);
         printf("  O = %d | OV = %d\n", records[i].offset, records[i].offsetValue);
     }
@@ -34,16 +35,44 @@ void printAllRecords1(std::vector<Row> records) {
 
 void HDD::printSortedRuns() {
     for(int i=0;i<sorted_runs.size();i++) {
-        printf("Run %d:\n", (i+1));
+        printf("Run %d:\n", (i));
         printAllRecords1(sorted_runs[i]);
         printf("\n");
     }
 }
 
-int HDD::getNumOfSortedRuns() {
-    return sorted_runs.size();
+void HDD::printMergedRuns() {
+    printAllRecords1(merged_run);
 }
 
-std::vector<std::vector<Row> > HDD::getSortedRuns() {
+void HDD::appendMergedRunsToSortedRuns() {
+    sorted_runs.push_back(merged_run);
+
+    // Clear mergedRun for future use
+    merged_run.clear();
+}
+
+int HDD::getNumOfSortedRuns() {
+    int ct = 0;
+    for(int i=0;i<sorted_runs.size();i++) {
+        if(!sorted_runs[i].empty()) ct++;
+    }
+    return ct;
+}
+
+std::vector<std::vector<Row> >& HDD::getSortedRuns() {
     return sorted_runs;
+}
+
+void HDD::addBufferToMergedRun(std::vector<Row> mergedBuffer) {
+    merged_run.insert(merged_run.end(), mergedBuffer.begin(), mergedBuffer.end());
+}
+
+bool isEmptyRun(const std::vector<Row>& run) {
+    return run.empty();
+}
+
+void HDD::clearEmptySortedRuns() {
+    sorted_runs.erase(std::remove_if(sorted_runs.begin(), sorted_runs.end(), isEmptyRun),
+                                    sorted_runs.end());
 }

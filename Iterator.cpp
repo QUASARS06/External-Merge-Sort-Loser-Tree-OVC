@@ -2,7 +2,7 @@
 
 Row::Row ()
 {
-	TRACE (true);
+	TRACE (false);
 } // Row::Row
 
 Row::~Row ()

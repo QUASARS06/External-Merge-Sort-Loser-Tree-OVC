@@ -51,6 +51,13 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	traceprintf ("%s consumed %lu rows\n",
 			_plan->_name,
 			(unsigned long) (_consumed));
+	
+	// printf("HDD\n");
+	// hdd->printSortedRuns();
+
+	dram->mergeSortedRuns(*hdd);
+	hdd->printSortedRuns();
+
 } // SortIterator::SortIterator
 
 SortIterator::~SortIterator ()
@@ -68,7 +75,8 @@ SortIterator::~SortIterator ()
 bool SortIterator::next (Row & row)
 {
 	TRACE (true);
-	printf("Printing HDD\n");
+	// hdd->printSortedRuns();
+	// printf("Printing HDD\n");
 	// hdd->printSortedRuns();
 	//dram->mergeSortedRuns(hdd->getSortedRuns());
 	

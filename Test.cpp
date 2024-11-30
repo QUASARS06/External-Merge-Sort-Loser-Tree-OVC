@@ -16,10 +16,17 @@ int main(int argc, char *argv[])
 	char operator_type = '>';
 
 	// RAM
-	int ram_capacity = 5;	// number of records that can be stored in RAM
-	int page_size = 5;
+	// int ram_capacity = 15;	// number of records that can be stored in RAM
+	// int page_size = 5;
 
-	int num_of_records = 20;
+	// int num_of_records = 60;
+
+	int ram_capacity = 20;	// number of records that can be stored in RAM
+	int page_size = 4;
+
+	int num_of_records = 60;
+
+	if(ram_capacity == page_size || ram_capacity % page_size != 0) return -1;
 
 	std::srand(42);
 
