@@ -75,24 +75,6 @@ SortIterator::~SortIterator ()
 bool SortIterator::next (Row & row)
 {
 	TRACE (true);
-	// hdd->printSortedRuns();
-	// printf("Printing HDD\n");
-	// hdd->printSortedRuns();
-	//dram->mergeSortedRuns(hdd->getSortedRuns());
-	
-	// while(hdd->getNumOfSortedRuns() != 1) {
-
-	// 	// pull from hdd and load into ram and merge and write back to hdd
-	// 	// Use this formula to generate initial runs => ((W-2) % (F-1) + 2)
-
-		
-		
-	// }
-
-	// this means the number of sorted runs is less than the Fan-In
-	// Hence now on each next() request we can pop the head of the tree of loser to return record
-
-	// dram->popLoserTreeHead();
 
 	if (_produced >= _consumed)  return false;
 

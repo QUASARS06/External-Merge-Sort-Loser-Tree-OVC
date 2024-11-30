@@ -56,8 +56,6 @@ void DRAM::sortRecords() {
 }
 
 void DRAM::mergeSortedRuns(HDD& hdd) {
-    flushRAM();
-
     int totalBuffers = capacity / page_size;
     int B = totalBuffers - 1;
     int W = hdd.getNumOfSortedRuns();
@@ -66,9 +64,6 @@ void DRAM::mergeSortedRuns(HDD& hdd) {
 
     int mergingRunSt = 0;
     int mergingRunEnd = X-1;
-    
-    int pass = 0;
-    printf("--------------------------------------------- PASS %d ---------------------------------------------\n", pass);
 
     int sortedRunEnd = hdd.getNumOfSortedRuns();
     while(hdd.getNumOfSortedRuns() > B) {
@@ -78,8 +73,6 @@ void DRAM::mergeSortedRuns(HDD& hdd) {
         mergingRunEnd = std::min(mergingRunSt + B, (int)W) - 1;
 
         if(mergingRunSt >= sortedRunEnd) {
-            pass++;
-            printf("--------------------------------------------- PASS %d ---------------------------------------------\n", pass);
             // clear all empty runs
             hdd.clearEmptySortedRuns();
             mergingRunSt = 0;
@@ -93,6 +86,7 @@ void DRAM::mergeSortedRuns(HDD& hdd) {
 }
 
 void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
+
     int totalBuffers = capacity / page_size;
     int B = totalBuffers - 1; // Reserve 1 buffer for output
 
@@ -104,14 +98,6 @@ void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
     for(int sortedRunIdx = sortedRunStIdx ; sortedRunIdx <= sortedRunEndIdx ; sortedRunIdx++) {
         loadBufferFromRun(sortedRunIdx, sortedRuns[sortedRunIdx], X); // Load the first `pageSize` rows
     }
-
-    // printf("RAM After Loading!!\n");
-    // printAllRecords();
-
-    // printf("\nsortedRunStIdx = %d | sortedRunEndIdx = %d\n\n", sortedRunStIdx, sortedRunEndIdx);
-
-    // printf("\nNew HDD\n");
-    // hdd.printSortedRuns();
 
     // Initialize the TreeOfLosers
     std::vector<int> currentIndices;           // Current index in each run
@@ -128,14 +114,6 @@ void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
         records[outputBufferIdx] = nextRow;
         outputBufferIdx += 1;
 
-        // printf("lastWinnerRunIdx = %d\n", lastWinnerRunIdx);
-        // printArray(nextRow.columns, nextRow.offset, nextRow.offsetValue);
-        // printf("Current Indices = [");
-        // for(int i=0;i<currentIndices.size();i++) {
-        //     printf("%d, ", currentIndices[i]);
-        // }
-        // printf("]\n\n");
-
         // check if lastWinnerRunIdx is at end of it's range then reload
         int endIdxForRun = (lastWinnerRunIdx+1) * page_size - 1;
 
@@ -149,44 +127,25 @@ void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
             
             loadBufferFromRun(sortedRunIdx, run, X); // Load the first `pageSize` rows
             // Actual runIdx in sortedRuns = sortedRunStIdx + lastWinnerRunIdx
-
-            // printf("\n\nRAM after reloading\n");
-            // printAllRecords();
-            // printf("\nRAM after reloading\n");
             currentIndices[lastWinnerRunIdx] = lastWinnerRunIdx * page_size;
         }
 
         if(outputBufferIdx >= capacity) {
-            //printf("Offloading\n\n");
-            //printAllRecords();
             // flush output buffer to hdd
             hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + capacity ));
-            //std::vector<Row> slice(records.begin() + outputBufferStIdx, records.begin() + capacity );
-
             outputBufferIdx = outputBufferStIdx;
         }
-
-        // Reload buffers if any input buffer is exhausted
-        // for (int i = 0; i < runsToMerge.size(); ++i) {
-        //     if (isBufferExhausted(i)) {
-        //         if (!loadBufferFromRun(i, runsToMerge[i], pageSize)) {
-        //             loadDummyRow(i); // Load dummy if the run is exhausted
-        //         }
-        //     }
-        // }
     }
 
-    // printf("DONE-----------------\n");
-    //hdd.printMergedRuns();
-    hdd.appendMergedRunsToSortedRuns();
-
-
-
     // Write any remaining rows in the output buffer to HDD
-    // if (outputBufferIdx < capacity) {
-    //     hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + outputBufferStIdx + outputBufferIdx ));
-    // }
+    if (outputBufferIdx < capacity) {
+        hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + outputBufferIdx ));
+    }
+
+    hdd.appendMergedRunsToSortedRuns();
 }
+
+
 
 void DRAM::loadBufferFromRun(int runIndex, std::vector<Row>& run, int X) {
     // Calculate start and end indices for the next chunk
@@ -203,10 +162,6 @@ void DRAM::loadBufferFromRun(int runIndex, std::vector<Row>& run, int X) {
         }
     }
 }
-
-// bool DRAM::isExhausted(int lastWinnerRunIdx, std::vector<int> currentIndices) {
-//     return 
-// }
 
 std::vector<Row> DRAM::getAllRecords() {
     return records;
