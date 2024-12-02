@@ -15,6 +15,7 @@ public:
     std::vector<Row> getAllRecords();
     void flushRAM();
     bool isFull();
+    bool isEmpty();
     int getCapacity();
 
     void sortRecords();

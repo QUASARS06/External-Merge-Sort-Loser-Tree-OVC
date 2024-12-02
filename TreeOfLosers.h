@@ -13,16 +13,15 @@ public:
 
 class TreeOfLosers {
 private:
-    std::vector<Row>& sortedRuns;  // Input sorted runs
-    std::vector<LoserTreeNode> loserTree;      // Tree of losers
-    std::vector<int>& currentIndices;           // Current index in each run
+    std::vector<Row>& sortedRuns;   // Input sorted runs
+    std::vector<LoserTreeNode> loserTree;   // Tree of losers
+    std::vector<int>& currentIndices;   // Current index in each run
 
     int loserTreeHeight;
     int numOfLoserNodes;
     int numOfRuns;
     int treeSize;
     int pageSize;
-    // int sortedRunSize;
 
     int& lastWinnerRunIdx;
 

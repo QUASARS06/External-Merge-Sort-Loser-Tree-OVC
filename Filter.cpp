@@ -35,7 +35,7 @@ FilterIterator::~FilterIterator ()
 	traceprintf ("produced %lu of %lu rows\n",
 			(unsigned long) (_produced),
 			(unsigned long) (_consumed));
-	printf("------------------------------------------------------------------------\n\n");
+	printf("------------------------------------------------------------------------\n");
 } // FilterIterator::~FilterIterator
 
 bool FilterIterator::next (Row & row)

@@ -33,7 +33,7 @@ ScanIterator::~ScanIterator()
 	TRACE(false);
 	printf("\n------------------------------------------------------------------------\n");
 	traceprintf("produced %lu of %lu rows\n", (unsigned long)(_count), (unsigned long)(_plan->_count));
-	printf("------------------------------------------------------------------------\n\n");
+	printf("------------------------------------------------------------------------\n");
 } // ScanIterator::~ScanIterator
 
 bool ScanIterator::next(Row &row)

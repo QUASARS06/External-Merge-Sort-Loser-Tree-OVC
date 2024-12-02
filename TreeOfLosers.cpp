@@ -57,9 +57,16 @@ TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sorte
     : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), lastWinnerRunIdx(lastWinnerRunIdx) {
     
     loserTreeHeight = (int)std::ceil(std::log(sortedRunSize) / std::log(2.0));
-    numOfLoserNodes = (int)std::pow(2, loserTreeHeight) - 1;
+    numOfLoserNodes = (int)std::pow(2.0, loserTreeHeight) - 1;
     numOfRuns = (sortedRunSize + pageSize - 1) / pageSize;
-    treeSize = (int)std::pow(2, loserTreeHeight - 1) + (int)std::ceil(numOfRuns / 2.0) - 1;
+    treeSize = (int)std::pow(2.0, loserTreeHeight - 1) + (int)std::ceil(numOfRuns / 2.0) - 1;
+
+    // printf("pageSize = %d\n", pageSize);
+    // printf("sortedRunSize = %d\n", sortedRunSize);
+    // printf("loserTreeHeight = %d\n", loserTreeHeight);
+    // printf("numOfLoserNodes = %d\n", numOfLoserNodes);
+    // printf("numOfRuns = %d\n", numOfRuns);
+    // printf("treeSize = %d\n", treeSize);
 
     // Clear and resize currentIndices
     currentIndices.clear();
@@ -72,8 +79,6 @@ TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sorte
     for (int i = 0; i <= treeSize; ++i) {
         loserTree.push_back(LoserTreeNode(i)); // Initialize tree
     }
-
-    // loserTree.push_back(LoserTreeNode(numOfRuns)); // Add final tree node
 }
 
 Row& TreeOfLosers::getRow(int runIndex) {

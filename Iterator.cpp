@@ -39,5 +39,6 @@ void Iterator::run ()
 	for (Row row;  next (row);  free (row))
 		++ _rows;
 
+	printf("\n");
 	traceprintf ("entire plan produced %lu rows\n", (unsigned long) _rows);
 } // Iterator::run

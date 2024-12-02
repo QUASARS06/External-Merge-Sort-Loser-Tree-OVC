@@ -26,45 +26,64 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	dram = new DRAM(_plan->ram_capacity, _plan->page_size);
 	hdd = new HDD();
 
-	printf("------------------------- Pass 0 : Sorting -------------------------\n");
 	for (Row row;  _input->next (row);  _input->free (row)) {
 		
 		dram->addRecord(row);
 
 		if(dram->isFull()) {
-			
-			//printf("Before Sort\n");
-			//dram->printAllRecords();
 			dram->sortRecords();
-
-			//printf("After Sort\n");
-			//dram->printAllRecords();
 			hdd->writeSortedRuns(dram->getAllRecords());
 			dram->flushRAM();
-
 		}
 
 		++ _consumed;
 	}
 
+	// if ram is not full but there are still records in it then we need to sort and write them to hdd
+	if(!dram->isEmpty()) {
+		dram->sortRecords();
+		hdd->writeSortedRuns(dram->getAllRecords());
+		dram->flushRAM();
+	}
+
 	delete _input;
 
-	traceprintf ("%s consumed %lu rows\n\n",
-			_plan->_name,
-			(unsigned long) (_consumed));
-	
-	// printf("HDD\n");
-	// hdd->printSortedRuns();
+	printf("\n");
+	traceprintf ("%s consumed %lu rows\n", _plan->_name, (unsigned long) (_consumed));
 
-	// this will merge all sorted runs until the number of sorted runs is less than equal to merging buffers
-	dram->mergeSortedRuns(*hdd);
-	// hdd->printSortedRuns();
-	// printf("HERE\n");
+    int expectedW = std::ceil(_consumed*1.0 / _plan->ram_capacity);
 
-	printf("------------------------- Pass %d : Merging -------------------------\n", dram->pass);
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
     int B = totalBuffers - 1;
     int W = hdd->getNumOfSortedRuns();
+
+	int X = (W-2) % (B-1) + 2;
+
+	int mergeDepth = 1 + std::ceil(std::log(W) / std::log(B));
+
+	printf("\n-----------------------------------------\n");
+    printf("RAM Parameters:\n");
+    printf("RAM Capacity - %d\n", _plan->ram_capacity);
+    printf("Page Size - %d\n", _plan->page_size);
+    printf("Total Buffers - %d\n", totalBuffers);
+    printf("B - %d (1 output buffer)\n", B);
+    printf("Actual Number of Sorted Runs (W) - %d\n", W);
+    printf("Initial Merge Fan-In (X) - %d\n", X);
+
+	printf("\nCalculations:\n");
+	printf("Expected Merge Depth (# of passes) - %d\n", mergeDepth);
+	printf("Expected Number of Sorted Runs (W) - %d\n", expectedW);
+    printf("-----------------------------------------\n\n");
+
+	// printing this after in-memory sorting is actually complete (only so it looks good in output)
+	// but for other passes it's printed at the start of the merge pass
+	printf("------------------------- Pass 0 : Sorting -------------------------\n");
+
+	// this will merge all sorted runs until the number of sorted runs is less than equal to merging buffers
+	dram->mergeSortedRuns(*hdd);
+
+	// this will prepare the loser tree for the final merge step
+	printf("------------------------- Pass %d : Merging -------------------------\n", dram->pass);
 
 	int mergingRunSt = 0;
     int mergingRunEnd = std::min(mergingRunSt + B, (int)W) - 1;
@@ -78,12 +97,12 @@ SortIterator::~SortIterator ()
 {
 	TRACE (false);
 
-	printf("\n------------------------------------------------------------------------\n");
+	printf("\n----------------------------------------------------------------------------------\n");
 	traceprintf ("%s produced %lu of %lu rows\n",
 			_plan->_name,
 			(unsigned long) (_produced),
 			(unsigned long) (_consumed));
-	printf("------------------------------------------------------------------------\n\n");
+	printf("----------------------------------------------------------------------------------\n");
 } // SortIterator::~SortIterator
 
 bool SortIterator::next (Row & row)
