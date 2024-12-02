@@ -16,19 +16,44 @@ int main(int argc, char *argv[])
 	char operator_type = '>';
 
 	// RAM
-	// int ram_capacity = 15;	// number of records that can be stored in RAM
-	// int page_size = 5;
+	int ram_capacity = 15;	// number of records that can be stored in RAM
+	int page_size = 5;
+
+	int num_of_records = 6000;
+
+	// int ram_capacity = 20;	// number of records that can be stored in RAM
+	// int page_size = 4;
 
 	// int num_of_records = 60;
 
-	int ram_capacity = 20;	// number of records that can be stored in RAM
-	int page_size = 4;
+	// int ram_capacity = 20000;	// number of records that can be stored in RAM
+	// int page_size = 400;
 
-	int num_of_records = 60;
+	// int num_of_records = 6000000;
 
 	if(ram_capacity == page_size || ram_capacity % page_size != 0) return -1;
 
-	std::srand(42);
+	// std::srand(42);
+
+	int totalBuffers = ram_capacity / page_size;
+    int B = totalBuffers - 1;
+    int W = std::ceil(num_of_records / ram_capacity);
+	int X = (W-2) % (B-1) + 2;
+
+	int mergeDepth = 1 + std::ceil(std::log(W) / std::log(B));
+
+	printf("\n-----------------------------------------\n");
+    printf("RAM Parameters:\n");
+    printf("RAM Capacity - %d\n", ram_capacity);
+    printf("Page Size - %d\n", page_size);
+    printf("Total Buffers - %d\n", totalBuffers);
+    printf("B - %d\n", B);
+    printf("Number of Sorted Runs (W) - %d\n", W);
+    printf("Initial Merge Fan-In (X) - %d\n", X);
+
+	printf("\nCalculations:\n");
+	printf("Expected Merge Depth (# of passes) - %d\n", mergeDepth);
+    printf("-----------------------------------------\n\n");
 
 	Plan *const plan =
 		new WitnessPlan ("output",
@@ -41,7 +66,7 @@ int main(int argc, char *argv[])
 				)
 			);
 
-	printf("\nPlan Created | Calling INIT\n\n");
+	printf("Plan Created | Calling INIT\n\n");
 
 	Iterator *const it = plan->init();
 

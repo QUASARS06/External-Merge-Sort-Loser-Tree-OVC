@@ -3,18 +3,18 @@
 FilterPlan::FilterPlan (char const * const name, int col_num, int value, char operator_type, Plan * const input)
 	: Plan (name), _input (input), col_num (col_num), value (value), operator_type (operator_type)
 {
-	TRACE (true);
+	TRACE (false);
 } // FilterPlan::FilterPlan
 
 FilterPlan::~FilterPlan ()
 {
-	TRACE (true);
+	TRACE (false);
 	delete _input;
 } // FilterPlan::~FilterPlan
 
 Iterator * FilterPlan::init () const
 {
-	TRACE (true);
+	TRACE (false);
 	return new FilterIterator (this);
 } // FilterPlan::init
 
@@ -22,25 +22,25 @@ FilterIterator::FilterIterator (FilterPlan const * const plan) :
 	_plan (plan), _input (plan->_input->init ()),
 	_consumed (0), _produced (0)
 {
-	TRACE (true);
+	TRACE (false);
 } // FilterIterator::FilterIterator
 
 FilterIterator::~FilterIterator ()
 {
-	TRACE (true);
+	TRACE (false);
 
 	delete _input;
 
-	printf("------------------------------------------------------------------------\n");
+	printf("\n------------------------------------------------------------------------\n");
 	traceprintf ("produced %lu of %lu rows\n",
 			(unsigned long) (_produced),
 			(unsigned long) (_consumed));
-	printf("------------------------------------------------------------------------\n");
+	printf("------------------------------------------------------------------------\n\n");
 } // FilterIterator::~FilterIterator
 
 bool FilterIterator::next (Row & row)
 {
-	TRACE (true);
+	TRACE (false);
 
 	for (;;)
 	{
@@ -61,6 +61,6 @@ bool FilterIterator::next (Row & row)
 
 void FilterIterator::free (Row & row)
 {
-	TRACE (true);
+	TRACE (false);
 	_input->free (row);
 } // FilterIterator::free

@@ -12,29 +12,29 @@ Row::~Row ()
 
 Plan::Plan (char const * const name) : _name (name)
 {
-	printf("Name = %s\n", name);
-	TRACE (true);
+	//printf("Name = %s\n", name);
+	TRACE (false);
 } // Plan::Plan
 
 Plan::~Plan ()
 {
-	printf("DELETING Name = %s\n", _name);
-	TRACE (true);
+	//printf("DELETING Name = %s\n", _name);
+	TRACE (false);
 } // Plan::~Plan
 
 Iterator::Iterator () : _rows (0)
 {
-	TRACE (true);
+	TRACE (false);
 } // Iterator::Iterator
 
 Iterator::~Iterator ()
 {
-	TRACE (true);
+	TRACE (false);
 } // Iterator::~Iterator
 
 void Iterator::run ()
 {
-	TRACE (true);
+	TRACE (false);
 
 	for (Row row;  next (row);  free (row))
 		++ _rows;

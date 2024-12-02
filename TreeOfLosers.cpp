@@ -54,19 +54,12 @@ LoserTreeNode::~LoserTreeNode () {}
 
 // TreeOfLosers implementation
 TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, std::vector<int>& currentIndices, int& lastWinnerRunIdx)
-    : sortedRuns(sortedRuns), pageSize(pageSize), sortedRunSize(sortedRunSize), currentIndices(currentIndices), lastWinnerRunIdx(lastWinnerRunIdx) {
+    : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), lastWinnerRunIdx(lastWinnerRunIdx) {
     
     loserTreeHeight = (int)std::ceil(std::log(sortedRunSize) / std::log(2.0));
     numOfLoserNodes = (int)std::pow(2, loserTreeHeight) - 1;
     numOfRuns = (sortedRunSize + pageSize - 1) / pageSize;
     treeSize = (int)std::pow(2, loserTreeHeight - 1) + (int)std::ceil(numOfRuns / 2.0) - 1;
-
-    // printf("pageSize = %d\n", pageSize);
-    // printf("sortedRunSize = %d\n", sortedRunSize);
-    // printf("loserTreeHeight = %d\n", loserTreeHeight);
-    // printf("numOfLoserNodes = %d\n", numOfLoserNodes);
-    // printf("numOfRuns = %d\n", numOfRuns);
-    // printf("treeSize = %d\n", treeSize);
 
     // Clear and resize currentIndices
     currentIndices.clear();
@@ -76,12 +69,11 @@ TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sorte
         currentIndices[i] = pageSize * i; // Start at the first row of each run
     }
 
-    for (int i = 0; i < treeSize; ++i) {
-        //currentIndices[i] = pageSize * i; // Start at the first row of each run
+    for (int i = 0; i <= treeSize; ++i) {
         loserTree.push_back(LoserTreeNode(i)); // Initialize tree
     }
 
-    loserTree.push_back(LoserTreeNode(numOfRuns)); // Add final tree node
+    // loserTree.push_back(LoserTreeNode(numOfRuns)); // Add final tree node
 }
 
 Row& TreeOfLosers::getRow(int runIndex) {
@@ -94,17 +86,9 @@ Row& TreeOfLosers::getRow(int runIndex) {
         if(startIdx <= currIdx && currIdx <= endIdx) {
             return sortedRuns[currIdx];
         }
-
-        // printf("----------------------------- DAMN -----------------------------\n");
-        // printf("runIndex = %d\n", runIndex);
-        // printf("startIdx = %d\n", startIdx);
-        // printf("endIdx = %d\n", endIdx);
-        // printf("currIdx = %d\n\n", currIdx);
     }
 
-    
-
-    static Row dummyRow({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()},
+    static Row dummyRow({std::numeric_limits<int>::max()},
                     std::numeric_limits<int>::min(),
                     std::numeric_limits<int>::max());
     return dummyRow;
@@ -163,7 +147,6 @@ void TreeOfLosers::initializeTree() {
     int winnerRunIdx = init(1);
     LoserTreeNode& overallWinner = loserTree[0];
     overallWinner.runIndex = winnerRunIdx;
-
 }
 
 Row TreeOfLosers::getNextRow() {

@@ -22,7 +22,7 @@ private:
     int numOfRuns;
     int treeSize;
     int pageSize;
-    int sortedRunSize;
+    // int sortedRunSize;
 
     int& lastWinnerRunIdx;
 

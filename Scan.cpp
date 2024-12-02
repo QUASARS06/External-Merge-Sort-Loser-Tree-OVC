@@ -1,44 +1,44 @@
 #include "Scan.h"
 
 # define NUM_OF_COLS 4
-# define COL_VAL_DOMAIN 5 
+# define COL_VAL_DOMAIN 1000 
 
 // Scan Constructor
 ScanPlan::ScanPlan(char const *const name, RowCount const count) : Plan(name), _count(count)
 {
-	TRACE(true);
+	TRACE(false);
 } // ScanPlan::ScanPlan
 
 // Scan Destructor
 ScanPlan::~ScanPlan()
 {
-	TRACE(true);
+	TRACE(false);
 } // ScanPlan::~ScanPlan
 
 Iterator *ScanPlan::init() const
 {
-	TRACE(true);
+	TRACE(false);
 	return new ScanIterator(this);
 } // ScanPlan::init
 
 // ScanIterator Constructor
 ScanIterator::ScanIterator(ScanPlan const *const plan) : _plan(plan), _count(0)
 {
-	TRACE(true);
+	TRACE(false);
 } // ScanIterator::ScanIterator
 
 // ScanIterator Destructor
 ScanIterator::~ScanIterator()
 {
-	TRACE(true);
-	printf("------------------------------------------------------------------------\n");
+	TRACE(false);
+	printf("\n------------------------------------------------------------------------\n");
 	traceprintf("produced %lu of %lu rows\n", (unsigned long)(_count), (unsigned long)(_plan->_count));
-	printf("------------------------------------------------------------------------\n");
+	printf("------------------------------------------------------------------------\n\n");
 } // ScanIterator::~ScanIterator
 
 bool ScanIterator::next(Row &row)
 {
-	TRACE(true);
+	TRACE(false);
 	if (_count >= _plan->_count) return false;
 	
 	std::vector<int> arr(NUM_OF_COLS);
@@ -58,5 +58,5 @@ bool ScanIterator::next(Row &row)
 
 void ScanIterator::free(Row &row)
 {
-	TRACE(true);
+	TRACE(false);
 } // ScanIterator::free
