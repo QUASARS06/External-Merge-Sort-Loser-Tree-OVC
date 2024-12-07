@@ -12,26 +12,26 @@ int main(int argc, char *argv[])
 
 	// filter variables
 	int col_num = 0;
-	int value = 200;
+	int value = -1;
 	char operator_type = '>';
 
 	// RAM
-	// int ram_capacity = 15;	// number of records that can be stored in RAM
-	// int page_size = 5;
+	int ram_capacity = 15;	// number of records that can be stored in RAM
+	int page_size = 5;
 
-	// int num_of_records = 80;
+	int num_of_records = 64;
 
-	int ram_capacity = 20;	// number of records that can be stored in RAM
-	int page_size = 4;
+	// int ram_capacity = 20;	// number of records that can be stored in RAM
+	// int page_size = 4;
 
-	int num_of_records = 60;
+	// int num_of_records = 64;
 
-	// int ram_capacity = 20000;	// number of records that can be stored in RAM
-	// int page_size = 400;
+	// int ram_capacity = 2000;	// number of records that can be stored in RAM
+	// int page_size = 40;
 
-	// int num_of_records = 6000000;
+	// int num_of_records = 40000;
 
-	// std::srand(42);
+	std::srand(42);
 
     int B = (int)(ram_capacity / page_size) - 1;
 

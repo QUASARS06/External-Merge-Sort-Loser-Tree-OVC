@@ -76,3 +76,16 @@ void HDD::clearEmptySortedRuns() {
     sorted_runs.erase(std::remove_if(sorted_runs.begin(), sorted_runs.end(), isEmptyRun),
                                     sorted_runs.end());
 }
+
+void HDD::moveSmallerRunToStart() {
+    if (sorted_runs.size() < 2) return;
+
+    size_t firstSize = sorted_runs[0].size();
+    size_t lastSize = sorted_runs[sorted_runs.size() - 1].size();
+
+    if (lastSize < firstSize) {
+        vector<Row> lastVector = sorted_runs[sorted_runs.size() - 1];
+        sorted_runs.pop_back();
+        sorted_runs.insert(sorted_runs.begin(), lastVector);
+    }
+}

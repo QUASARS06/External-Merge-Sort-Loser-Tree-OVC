@@ -31,7 +31,14 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 		dram->addRecord(row);
 
 		if(dram->isFull()) {
+			printf("\nBefore Sorting:\n");
+			dram->printAllRecords();
+
 			dram->sortRecords();
+
+			printf("\nAfter Sorting:\n");
+			dram->printAllRecords();
+
 			hdd->writeSortedRuns(dram->getAllRecords());
 			dram->flushRAM();
 		}
@@ -41,7 +48,14 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 	// if ram is not full but there are still records in it then we need to sort and write them to hdd
 	if(!dram->isEmpty()) {
+		printf("\nBefore Sorting:\n");
+		dram->printAllRecords();
+
 		dram->sortRecords();
+
+		printf("\nAfter Sorting:\n");
+		dram->printAllRecords();
+
 		hdd->writeSortedRuns(dram->getAllRecords());
 		dram->flushRAM();
 	}
@@ -78,6 +92,15 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// printing this after in-memory sorting is actually complete (only so it looks good in output)
 	// but for other passes it's printed at the start of the merge pass
 	printf("------------------------- Pass 0 : Sorting -------------------------\n");
+
+
+	// -------- Starting Merging --------
+
+	// In the case where the last run doesn't completely occupy memory it will be smaller than rest of runs
+	// Since we first only merge (W-2) % (B-1) + 2 runs to minimize I/O we need to merge smaller runs
+	// So from an implementation perspective I'll just move the smallest run at the start of the sorted runs
+	// which will make sure we are minimizing the I/O ( as per the volcano paper )
+	hdd->moveSmallerRunToStart();
 
 	// this will merge all sorted runs until the number of sorted runs is less than equal to merging buffers
 	dram->mergeSortedRuns(*hdd);

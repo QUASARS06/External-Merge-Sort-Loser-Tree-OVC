@@ -53,20 +53,23 @@ LoserTreeNode::~LoserTreeNode () {}
 
 
 // TreeOfLosers implementation
-TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, std::vector<int>& currentIndices, int& lastWinnerRunIdx)
-    : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), lastWinnerRunIdx(lastWinnerRunIdx) {
+TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, 
+                            std::vector<int>& currentIndices, int& lastWinnerRunIdx, 
+                            int sortedRunsIndexOffset, bool useIndirection, std::vector<int> indirection)
+    : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), 
+    lastWinnerRunIdx(lastWinnerRunIdx), sortedRunsIndexOffset(sortedRunsIndexOffset), useIndirection(useIndirection), indirection(indirection) {
     
     loserTreeHeight = (int)std::ceil(std::log(sortedRunSize) / std::log(2.0));
     numOfLoserNodes = (int)std::pow(2.0, loserTreeHeight) - 1;
     numOfRuns = (sortedRunSize + pageSize - 1) / pageSize;
     treeSize = (int)std::pow(2.0, loserTreeHeight - 1) + (int)std::ceil(numOfRuns / 2.0) - 1;
 
-    // printf("pageSize = %d\n", pageSize);
+    // printf("\npageSize = %d\n", pageSize);
     // printf("sortedRunSize = %d\n", sortedRunSize);
     // printf("loserTreeHeight = %d\n", loserTreeHeight);
     // printf("numOfLoserNodes = %d\n", numOfLoserNodes);
     // printf("numOfRuns = %d\n", numOfRuns);
-    // printf("treeSize = %d\n", treeSize);
+    // printf("treeSize = %d\n\n", treeSize);
 
     // Clear and resize currentIndices
     currentIndices.clear();
@@ -88,8 +91,10 @@ Row& TreeOfLosers::getRow(int runIndex) {
 
         int currIdx = currentIndices[runIndex];
 
-        if(startIdx <= currIdx && currIdx <= endIdx) {
-            return sortedRuns[currIdx];
+        if(startIdx <= currIdx && currIdx <= endIdx && (currIdx + sortedRunsIndexOffset) < sortedRuns.size()) {
+            // printf("HERE Idx = %d\n", (currIdx + sortedRunsIndexOffset));
+            if(useIndirection) return sortedRuns[indirection[currIdx + sortedRunsIndexOffset]];
+            else return sortedRuns[currIdx + sortedRunsIndexOffset];
         }
     }
 

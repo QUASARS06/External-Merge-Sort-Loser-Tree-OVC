@@ -28,6 +28,8 @@ public:
     void cleanupMerging(HDD& hdd);
     TreeOfLosers& getMergingTree();
 
+    void sortInPlaceUsingSortIdx(std::vector<int> sortIdx);
+
     int outputBufferStIdx;
     int outputBufferIdx;
     int lastWinnerRunIdx;
@@ -36,6 +38,7 @@ public:
     std::unique_ptr<TreeOfLosers> mergingTree;
 
     int pass;
+    int ram_unsorted_ptr;
 
 private:
     std::vector<Row> records;

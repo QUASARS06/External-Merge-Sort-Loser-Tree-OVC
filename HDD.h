@@ -16,6 +16,7 @@ public:
     void printMergedRuns();
     void appendMergedRunsToSortedRuns();
     void clearEmptySortedRuns();
+    void moveSmallerRunToStart();
 
 private:
     std::vector<std::vector<Row> > sorted_runs;

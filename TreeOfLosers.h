@@ -25,12 +25,16 @@ private:
 
     int& lastWinnerRunIdx;
 
+    int sortedRunsIndexOffset;
+    bool useIndirection;
+    std::vector<int> indirection;
+
     Row& getRow(int runIndex);
     int init(int currNodeIdx);
     void updateTree(int competitorRunIndex);
 
 public:
-    TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, std::vector<int>& currentIndices, int& lastWinnerRunIdx);
+    TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, std::vector<int>& currentIndices, int& lastWinnerRunIdx, int sortedRunsIndexOffset, bool useIndirection, std::vector<int> indirection);
     void initializeTree();
     Row getNextRow();
 };
