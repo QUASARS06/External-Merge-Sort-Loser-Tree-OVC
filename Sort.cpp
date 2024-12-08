@@ -23,7 +23,11 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	_consumed (0), _produced (0)
 {
 	TRACE (false);
-	dram = new DRAM(_plan->ram_capacity, _plan->page_size);
+
+	// reserving 1 page for output buffer in the ram
+	int actual_ram_capacity = _plan->ram_capacity - _plan->page_size;
+
+	dram = new DRAM(actual_ram_capacity, _plan->page_size);
 	hdd = new HDD();
 
 	for (Row row;  _input->next (row);  _input->free (row)) {

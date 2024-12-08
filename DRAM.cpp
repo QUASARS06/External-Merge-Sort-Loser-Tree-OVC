@@ -107,101 +107,44 @@ void DRAM::sortInPlaceUsingSortIdx(std::vector<int> sortIdx) {
 void DRAM::sortRecords() {
     if(records.size() == 1) return;
 
-    std::vector<Row> sortedCacheRuns;
     std::vector<int> sortedCacheRunsIndexes;
     int winnerRunIdx = -1;
 
-    // printf("\n\nHello Boiss\n");
     // Cache Sized runs sorting
     int cacheSize = getCacheSize(capacity);
     for(int i = 0; i < records.size(); i += cacheSize) {
         int end = std::min(i + cacheSize, (int)records.size());
 
         if((end - i) == 1) {
-            printf("HERE\n");
             sortedCacheRunsIndexes.push_back(i);
-            sortedCacheRuns.push_back(records[i]);
             continue;
         }
 
         std::vector<int> currIdx;    // Current index in each run
-        //std::vector<Row> cacheSizedRecords = std::vector<Row>(records.begin() + i, records.begin() + end);
 
         TreeOfLosers cacheSortingTree(records, 1, (end-i), currIdx, winnerRunIdx, i, false, sortedCacheRunsIndexes);
         cacheSortingTree.initializeTree();
 
         Row nextRow;
         while ((nextRow = cacheSortingTree.getNextRow()).offsetValue != INT_MAX) {
-            //printf("Winner Idx = %d\n", winnerRunIdx);
-            // sortedCacheRunsIndexes.push_back(winnerRunIdx + i);
             sortedCacheRunsIndexes.push_back(winnerRunIdx + i);
-            sortedCacheRuns.push_back(nextRow);
         }
     }
-    // printf("\nHello Boiss\n");
-    
-    // printf("[");
-    // for(int i=0;i<sortedCacheRunsIndexes.size();i++) {
-    //     printf("%d, ",sortedCacheRunsIndexes[i]);
-    // }
-    // printf("]\n\n");
-
-
-    // flushRAM();
-    // records = sortedCacheRuns;
-
-    // it is our assumption that ram_capacity will always be a multiple of page_size
-    // so by that extension we need to make sure of it also for our cache sized runs
-    // hence we fence with infinite rows to make this condition true
-    // int numOfFenceRows = std::ceil(records.size()*1.0/cacheSize) * cacheSize - records.size();
-    // for(int i=0;i<numOfFenceRows;i++) {
-    //     records.push_back(Row({std::numeric_limits<int>::max()},
-    //                     std::numeric_limits<int>::min(),
-    //                     std::numeric_limits<int>::max()));
-    // }
 
     std::vector<int> currIdx;    // Current index in each run
 
     TreeOfLosers sortingTree(records, cacheSize, records.size(), currIdx, lastWinnerRunIdx, 0, true, sortedCacheRunsIndexes);
     sortingTree.initializeTree();
 
-    std::vector<Row> temp_buffer;
-
     Row nextRow;
-    // printf("Current Idx = [");
-    // for(int i=0;i<currIdx.size();i++) {
-    //     printf("%d, ",currIdx[i]);
-    // }
-    // printf("]\n\n");
 
     std::vector<int> sortIdx;
     while ((nextRow = sortingTree.getNextRow()).offsetValue != INT_MAX) {
-        temp_buffer.push_back(nextRow);
         int tp = sortedCacheRunsIndexes[currIdx[lastWinnerRunIdx] - 1];
-        
-        //printf("Win = %d\n", lastWinnerRunIdx);
-        // printf("Win TP = %d\n", tp);
-        // printArray(records[tp].columns, -1,-1,-1);
-        // printf("Current Idx = [");
-        // for(int i=0;i<currIdx.size();i++) {
-        //     printf("%d, ",currIdx[i]);
-        // }
-        // printf("]\n\n");
-
-        sortIdx.push_back(tp);
-
-        
+        sortIdx.push_back(tp);     
     }
 
-    // printf("Sort Idx = [");
-    // for(int i=0;i<sortIdx.size();i++) {
-    //     printf("%d, ",sortIdx[i]);
-    // }
-    // printf("]\n\n");
     sortInPlaceUsingSortIdx(sortIdx);
-
-    // flushRAM();
-    // records = temp_buffer;
 
 }
 
@@ -214,6 +157,8 @@ void DRAM::mergeSortedRuns(HDD& hdd) {
 
     int X = (W-2) % (B-1) + 2;
 
+    // 1-step to n-step Graceful Degradation
+    // We use the forumla to merge only X runs at the start
     int mergingRunSt = 0;
     int mergingRunEnd = X-1;
 
