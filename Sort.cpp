@@ -26,50 +26,66 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 	// reserving 1 page for output buffer in the ram
 	int actual_ram_capacity = _plan->ram_capacity - _plan->page_size;
+	// int actual_ram_capacity = _plan->ram_capacity;
 
 	dram = new DRAM(actual_ram_capacity, _plan->page_size);
 	hdd = new HDD();
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
 		
-		dram->addRecord(row);
+		// printf("\nAdding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
+		dram->addRecord(row, *hdd);
+		// dram->printAllRecords();
+		// printf("\n\n");
 
-		if(dram->isFull()) {
-			printf("\nBefore Sorting:\n");
-			dram->printAllRecords();
+		// if(dram->isFull()) {
+		// 	// printf("\nBefore Sorting:\n");
+		// 	// dram->printAllRecords();
 
-			dram->sortRecords();
+		// 	dram->sortRecords();
 
-			printf("\nAfter Sorting:\n");
-			dram->printAllRecords();
+		// 	// printf("\nAfter Sorting:\n");
+		// 	// dram->printAllRecords();
 
-			hdd->writeSortedRuns(dram->getAllRecords());
-			dram->flushRAM();
-		}
+		// 	hdd->writeSortedRuns(dram->getAllRecords());
+		// 	dram->flushRAM();
+		// }
 
 		++ _consumed;
 	}
+	dram->sortPartiallyFilledRam(*hdd);
+
+	// hdd->printSortedRuns();
+
+	// dram->printAllRecords();
+
+	// hdd->printSingleSortedRun();
+
+	// dram->printOutputBuffer();
+
+	// dram->printOutputBuffer();
 
 	// if ram is not full but there are still records in it then we need to sort and write them to hdd
-	if(!dram->isEmpty()) {
-		printf("\nBefore Sorting:\n");
-		dram->printAllRecords();
+	// if(!dram->isEmpty()) {
+	// 	// printf("\nBefore Sorting:\n");
+	// 	// dram->printAllRecords();
 
-		dram->sortRecords();
+	// 	dram->sortRecords();
 
-		printf("\nAfter Sorting:\n");
-		dram->printAllRecords();
+	// 	// printf("\nAfter Sorting:\n");
+	// 	// dram->printAllRecords();
 
-		hdd->writeSortedRuns(dram->getAllRecords());
-		dram->flushRAM();
-	}
+	// 	hdd->writeSortedRuns(dram->getAllRecords());
+	// 	dram->flushRAM();
+	// }
 
 	delete _input;
 
 	printf("\n");
 	traceprintf ("%s consumed %lu rows\n", _plan->_name, (unsigned long) (_consumed));
 
-    int expectedW = std::ceil(_consumed*1.0 / _plan->ram_capacity);
+
+    int expectedW = std::ceil(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
 
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
     int B = totalBuffers - 1;
@@ -118,6 +134,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// prepare tree for final merging
 	dram->prepareMergingTree(hdd->getSortedRuns(), mergingRunSt, mergingRunEnd, B);
 
+
 } // SortIterator::SortIterator
 
 SortIterator::~SortIterator ()
@@ -136,6 +153,7 @@ bool SortIterator::next (Row & row)
 {
 	TRACE (false);
 
+
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
     int B = totalBuffers - 1;
 	// Merge rows using TreeOfLosers
@@ -153,6 +171,7 @@ bool SortIterator::next (Row & row)
     // }
     // // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
 	// printf("]\n");
+
 
 	if (_produced >= _consumed)  return false;
 

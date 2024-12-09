@@ -34,6 +34,7 @@ void printAllRecords1(std::vector<Row> records) {
 }
 
 void HDD::printSortedRuns() {
+    printf("\nPrinting Sorted Runs\n");
     for(int i=0;i<sorted_runs.size();i++) {
         printf("Run %d:\n", (i));
         printAllRecords1(sorted_runs[i]);
@@ -88,4 +89,26 @@ void HDD::moveSmallerRunToStart() {
         sorted_runs.pop_back();
         sorted_runs.insert(sorted_runs.begin(), lastVector);
     }
+}
+
+void HDD::addOutputBufferToSingleSortedRun(std::vector<Row> outputBuffer) {
+    single_sorted_run.insert(single_sorted_run.begin(), outputBuffer.begin(), outputBuffer.end());
+}
+
+void HDD::addSingleSortedRunToSortedRuns() {
+    writeSortedRuns(single_sorted_run);
+    single_sorted_run.clear();
+}
+
+void HDD::printSingleSortedRun() {
+    printf("Single Sorted Run:\n");
+    printAllRecords1(single_sorted_run);
+}
+
+std::vector<Row>& HDD::getSingleSortedRun() {
+    return single_sorted_run;
+}
+
+bool HDD::isSingleSortedRunEmpty() {
+    return single_sorted_run.empty();
 }

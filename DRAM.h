@@ -10,7 +10,7 @@ public:
 	DRAM (int ram_capacity, int page_size);
 	~DRAM ();
 
-    bool addRecord(Row record);
+    bool addRecord(Row record, HDD& hdd);
     void printAllRecords();
     std::vector<Row> getAllRecords();
     void flushRAM();
@@ -18,7 +18,7 @@ public:
     bool isEmpty();
     int getCapacity();
 
-    void sortRecords();
+    void sortRecords(int sortingSize);
     void mergeSortedRuns(HDD& hdd);
     void mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X);
     void loadBufferFromRun(int runIndex, std::vector<Row>& run, int X);
@@ -28,7 +28,11 @@ public:
     void cleanupMerging(HDD& hdd);
     TreeOfLosers& getMergingTree();
 
-    void sortInPlaceUsingSortIdx(std::vector<int> sortIdx);
+    void sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N);
+
+    void printOutputBuffer();
+
+    void sortPartiallyFilledRam(HDD& hdd);
 
     int outputBufferStIdx;
     int outputBufferIdx;
@@ -42,6 +46,7 @@ public:
 
 private:
     std::vector<Row> records;
+    std::vector<Row> output_buffer;
     int capacity; // represents the number of records that can be stored in RAM
     int page_size;
     

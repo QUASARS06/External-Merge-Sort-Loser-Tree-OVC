@@ -16,6 +16,15 @@ int main(int argc, char *argv[])
 	char operator_type = '>';
 
 	// RAM
+
+
+	// int ram_capacity = 12;	// number of records that can be stored in RAM
+	// int page_size = 2;
+
+	// int num_of_records = 22;
+	// int num_of_records = 20;
+
+
 	int ram_capacity = 15;	// number of records that can be stored in RAM
 	int page_size = 5;
 

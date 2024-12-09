@@ -18,8 +18,17 @@ public:
     void clearEmptySortedRuns();
     void moveSmallerRunToStart();
 
+    void addOutputBufferToSingleSortedRun(std::vector<Row> outputBuffer);
+    void addSingleSortedRunToSortedRuns();
+    void printSingleSortedRun();
+
+    std::vector<Row>& getSingleSortedRun();
+    bool isSingleSortedRunEmpty();
+
 private:
     std::vector<std::vector<Row> > sorted_runs;
     std::vector<Row> merged_run;
+
+    std::vector<Row> single_sorted_run;
 
 }; // class DRAM

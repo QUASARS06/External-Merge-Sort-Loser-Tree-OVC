@@ -3,26 +3,294 @@
 #include "Iterator.h"
 #include "TreeOfLosers.h"
 #include <unistd.h>
+#include <algorithm>
 using namespace std;
 
 DRAM::DRAM (int capacity, int page_size) 
-: mergingTree(nullptr), ram_unsorted_ptr(0), capacity (capacity), page_size (page_size) {}
+: mergingTree(nullptr), ram_unsorted_ptr(0), capacity (capacity), page_size (page_size) {
+    output_buffer.reserve(page_size);
+}
 
 DRAM::~DRAM () {
 
 }
 
-bool DRAM::addRecord(Row record) {
+bool DRAM::addRecord(Row record, HDD& hdd) {
     if(records.size() < capacity) {
+        // printf("HERE\n");
         records.push_back(record);
+        ram_unsorted_ptr += 1;
         return true;
     } else {
+        // printf("RAM CAP = %d\n", capacity);
+        // printf("UPTR = %d\n", ram_unsorted_ptr);
         // ram is full
-        // sort if last element entered was at end of ram
+        // sort if ram_unsorted_ptr = capacity meaning that all records in ram are unsorted
         // load one record from ram to output buffer, if output buffer is full spill and empty it
+
+        if(ram_unsorted_ptr == capacity) {
+            // sort the records and prepare for sending to hdd
+            // printf("GOING TO SORT\n");
+            sortRecords(records.size());
+        }
+
+        ram_unsorted_ptr -= 1;
+
+        // remove the element at ram_unsorted_ptr and push to output buffer in sorted manner
+        Row r = records[ram_unsorted_ptr];
+        output_buffer.insert(output_buffer.begin(), r);
+
+        // add the NEW record to RAM
+        records[ram_unsorted_ptr] = record;
+
+        // check if output_buffer is full then we need to flush to disk
+        if(output_buffer.size() == page_size) {
+            // flush to disk
+
+            // printf("Output Buffer Full Flushing to Disk\n");
+            // printOutputBuffer();
+
+            hdd.addOutputBufferToSingleSortedRun(output_buffer);
+
+            output_buffer.clear();
+            // output_buffer.resize(page_size);
+        }
+
+        if(ram_unsorted_ptr == 0) {
+            ram_unsorted_ptr = capacity;
+
+            // one whole sorted run is flushed to disk at this point
+            // so we ask hdd to store it as a sorted run
+            // printf("Sorted Run Completed\n");
+            hdd.addSingleSortedRunToSortedRuns();
+        }
+
     }
 
     return false;
+}
+
+void ensurePageSize(std::vector<Row>& vec, size_t target_size, std::vector<Row>& overflow_buffer) {
+    if (vec.size() > target_size) {
+        // Move excess elements to overflow buffer
+        overflow_buffer.insert(overflow_buffer.end(), vec.begin() + target_size, vec.end());
+        // Resize the vector to match the page size
+        vec.resize(target_size);
+    } else if (vec.size() < target_size) {
+        // Add -1 to fill the vector to match the page size
+        vec.insert(vec.end(), target_size - vec.size(), Row({std::numeric_limits<int>::max()},
+                        std::numeric_limits<int>::min(),
+                        std::numeric_limits<int>::max()));
+    }
+}
+
+void DRAM::sortPartiallyFilledRam(HDD& hdd) {
+    // printf("\nPARTIAL PTR = %d\n", ram_unsorted_ptr);
+    if(ram_unsorted_ptr == capacity) {
+        sortRecords(records.size());
+        
+        hdd.addOutputBufferToSingleSortedRun(records);
+        hdd.addSingleSortedRunToSortedRuns();
+
+        records.clear();
+
+        return;
+    }
+
+    // printf("\nPARTIAL SORT BEFORE\n");
+    // printAllRecords();
+    // from 0 to ram_unsorted_ptr ram is sorted after that it is unsorted
+    std::rotate(records.begin(), records.begin() + ram_unsorted_ptr, records.end());
+    sortRecords(capacity - ram_unsorted_ptr);
+
+    // printf("\nPARTIAL SORT AFTER\n");
+    // printAllRecords();
+
+    // int firstRunStIdx = 0;
+    // int firstRunEnd = capacity - ram_unsorted_ptr - 1;
+
+    // int secondRunStIdx = firstRunEnd + 1;
+    // int secondRunEnd = records.size() - 1;
+
+    // printf("\nfirstRunStIdx = %d\n", firstRunStIdx);
+    // printf("firstRunEnd = %d\n", firstRunEnd);
+    // printf("secondRunStIdx = %d\n", secondRunStIdx);
+    // printf("secondRunEnd = %d\n", secondRunEnd);
+
+    int idx = capacity - ram_unsorted_ptr - 1;
+
+    hdd.addOutputBufferToSingleSortedRun(output_buffer);
+    output_buffer.clear();
+
+    std::vector<Row>& spilledSortedRun = hdd.getSingleSortedRun();
+
+    std::vector<Row> sortedRun1(records.begin(), records.begin() + idx + 1);
+    std::vector<Row> sortedRun2(records.begin() + idx + 1, records.end());
+
+    sortedRun2.insert(sortedRun2.end(), spilledSortedRun.begin(), spilledSortedRun.end());
+
+    // records size will always be even (since capacity of ram would be even)
+    size_t target_size = records.size() / 2;
+
+    std::vector<Row> overflow_buffer1;
+    std::vector<Row> overflow_buffer2;
+
+    ensurePageSize(sortedRun1, target_size, overflow_buffer1);
+    ensurePageSize(sortedRun2, target_size, overflow_buffer2);
+
+    // records = sortedRun1;
+    // printAllRecords();
+    // records = sortedRun2;
+    // printAllRecords();
+    // records = overflow_buffer1;
+    // printAllRecords();
+    // records = overflow_buffer2;
+    // printAllRecords();
+
+    sortedRun1.insert(sortedRun1.end(), sortedRun2.begin(), sortedRun2.end());
+    records = sortedRun1;
+
+    // printAllRecords();
+
+
+    lastWinnerRunIdx = -1;
+    std::vector<int> emptyIndirection;
+    mergingTree = std::make_unique<TreeOfLosers>(records, target_size, 2 * target_size, currentIndices, lastWinnerRunIdx, 0, false, emptyIndirection);
+    mergingTree->initializeTree();
+
+    Row nextRow;
+    while ((nextRow = mergingTree->getNextRow()).offsetValue != INT_MAX) {
+        // printf("LWI = %d\n", lastWinnerRunIdx);
+        output_buffer.push_back(nextRow);
+
+        // check if lastWinnerRunIdx is at end of it's range then reload
+        int endIdxForRun = (lastWinnerRunIdx+1) * target_size - 1;
+
+        // This condition checks if run is going to exhausts and hence loads the corresponding buffer with more data if available
+        if(currentIndices[lastWinnerRunIdx] >= endIdxForRun) {
+            std::vector<Row>& run = lastWinnerRunIdx == 0 ? overflow_buffer1 : overflow_buffer2;
+            run.insert(run.begin(), records[endIdxForRun]);
+
+            for(int i=lastWinnerRunIdx*target_size;i<=endIdxForRun;i++) {
+                if(run.size() > 0) {
+                    records[i] = run.front();
+                    run.erase(run.begin());
+                } else {
+                    records[i] = Row({std::numeric_limits<int>::max()},
+                        std::numeric_limits<int>::min(),
+                        std::numeric_limits<int>::max());
+                }
+                
+            }
+            
+            // loadBufferFromRun(sortedRunIdx, run, sortedRunStIdx); // Load the first `pageSize` rows
+            currentIndices[lastWinnerRunIdx] = lastWinnerRunIdx * target_size;
+        }
+
+        if(output_buffer.size() == page_size) {
+            hdd.addBufferToMergedRun(output_buffer);
+            output_buffer.clear();
+        }
+
+    }
+
+    cleanupMerging(hdd);
+
+    hdd.clearEmptySortedRuns();
+
+
+    // At this point we have 2 sorted runs in the RAM
+    // 1st run from 0 to (capacity - ram_unsorted_ptr - 1)
+    // 2nd run from ram_unsorted_ptr to (capacity - 1) 
+    // and some part of the 2nd run is spilled on ram in the single sorted run
+
+    // So we can merge these 2 runs we use the 2 buffers at the start for merging
+
+    // Extract the element at position i
+    // int idx = capacity - ram_unsorted_ptr;
+    // Row firstRowOfSecondSortedRun = records[idx];
+    // // Erase the element from position i
+    // records.erase(records.begin() + idx);
+    // // Insert the element at position 1
+    // records.insert(records.begin() + 1, firstRowOfSecondSortedRun);
+
+    // printf("\nAFTER PREP\n");
+    // printAllRecords();
+
+    // output_buffer.clear();
+
+    // lastWinnerRunIdx = -1;
+    // std::vector<int> emptyIndirection;
+    // mergingTree = std::make_unique<TreeOfLosers>(records, 1, 2, currentIndices, lastWinnerRunIdx, 0, false, emptyIndirection);
+    // mergingTree->initializeTree();
+
+    // outputBufferStIdx = capacity - page_size;
+    // outputBufferIdx = outputBufferStIdx;
+
+    // Row nextRow;
+    // while ((nextRow = mergingTree->getNextRow()).offsetValue != INT_MAX) {
+
+    //     output_buffer.push_back(nextRow);
+    //     printf("LWI = %d\n", lastWinnerRunIdx);
+
+    //     Row nextRowToLoad;
+    //     if(lastWinnerRunIdx == 0) {
+
+    //         if(firstRunStIdx <= firstRunEnd) {
+    //             nextRowToLoad = records[firstRunStIdx];
+    //             firstRunStIdx++;
+    //         } else {
+    //             nextRowToLoad = Row({std::numeric_limits<int>::max()},
+    //                     std::numeric_limits<int>::min(),
+    //                     std::numeric_limits<int>::max());
+    //         }
+            
+    //     } else {
+    //         if(secondRunStIdx <= secondRunEnd) {
+    //             nextRowToLoad = records[secondRunStIdx];
+    //             secondRunStIdx++;
+    //         } 
+    //         else if(!hdd.isSingleSortedRunEmpty()) {
+    //             std::vector<Row>& singleSortedRun = hdd.getSingleSortedRun();
+    //             nextRowToLoad = singleSortedRun.front();
+    //             singleSortedRun.erase(singleSortedRun.begin());
+    //         }
+    //         else {
+    //             nextRowToLoad = Row({std::numeric_limits<int>::max()},
+    //                     std::numeric_limits<int>::min(),
+    //                     std::numeric_limits<int>::max());
+    //         }
+    //     }
+
+    //     records[lastWinnerRunIdx] = nextRowToLoad;
+
+    //     if(output_buffer.size() == page_size) {
+    //         hdd.addBufferToMergedRun(output_buffer);
+    //         output_buffer.clear();
+    //     }
+
+    //     printf("\nAfter loading new\n");
+    //     printAllRecords();
+    //     printf("\n");
+
+    // }
+
+    // printf("NEXT ROW OFF = %d", nextRow.offsetValue);
+
+    // if (!output_buffer.empty()) {
+    //     hdd.addBufferToMergedRun(output_buffer);
+    // }
+
+    // hdd.appendMergedRunsToSortedRuns();
+
+
+
+    // Row nextRow;
+    // while ((nextRow = getNextSortedRow(hdd, sortedRunStIdx, X)).offsetValue != INT_MAX);
+
+    // cleanupMerging(hdd);
+
+
 }
 
 void printArray(std::vector<int> arr, int offset, int offsetValue, int slot) {
@@ -38,6 +306,18 @@ void DRAM::printAllRecords() {
     printf("Printing RAM !!!!\n");
     for(int i=0 ; i < records.size() ; i++) {
         printArray(records[i].columns, records[i].offset, records[i].offsetValue, i);
+    }
+}
+
+void DRAM::printOutputBuffer() {
+    if(output_buffer.empty()) {
+        printf("Output Buffer EMPTY\n");
+        return;
+    }
+
+    printf("Output Buffer:\n");
+    for(int i=0 ; i < output_buffer.size() ; i++) {
+        printArray(output_buffer[i].columns, output_buffer[i].offset, output_buffer[i].offsetValue, i);
     }
 }
 
@@ -82,8 +362,8 @@ int getCacheSize(int num) {
 //     records = temp_buffer;
 // }
 
-void DRAM::sortInPlaceUsingSortIdx(std::vector<int> sortIdx) {
-    size_t N = records.size();  // Get the size of records (and sortIdx)
+void DRAM::sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N) {
+    //size_t N = records.size();  // Get the size of records (and sortIdx)
     using std::swap; // To permit Koenig lookup
     
     // Loop through all records and apply the permutation
@@ -104,7 +384,7 @@ void DRAM::sortInPlaceUsingSortIdx(std::vector<int> sortIdx) {
     }
 }
 
-void DRAM::sortRecords() {
+void DRAM::sortRecords(int sortingSize) {
     if(records.size() == 1) return;
 
     std::vector<int> sortedCacheRunsIndexes;
@@ -112,8 +392,8 @@ void DRAM::sortRecords() {
 
     // Cache Sized runs sorting
     int cacheSize = getCacheSize(capacity);
-    for(int i = 0; i < records.size(); i += cacheSize) {
-        int end = std::min(i + cacheSize, (int)records.size());
+    for(int i = 0; i < sortingSize; i += cacheSize) {
+        int end = std::min(i + cacheSize, (int)sortingSize);
 
         if((end - i) == 1) {
             sortedCacheRunsIndexes.push_back(i);
@@ -133,7 +413,7 @@ void DRAM::sortRecords() {
 
     std::vector<int> currIdx;    // Current index in each run
 
-    TreeOfLosers sortingTree(records, cacheSize, records.size(), currIdx, lastWinnerRunIdx, 0, true, sortedCacheRunsIndexes);
+    TreeOfLosers sortingTree(records, cacheSize, sortingSize, currIdx, lastWinnerRunIdx, 0, true, sortedCacheRunsIndexes);
     sortingTree.initializeTree();
 
     Row nextRow;
@@ -144,7 +424,7 @@ void DRAM::sortRecords() {
         sortIdx.push_back(tp);     
     }
 
-    sortInPlaceUsingSortIdx(sortIdx);
+    sortInPlaceUsingSortIdx(sortIdx, sortingSize);
 
 }
 
@@ -152,7 +432,9 @@ void DRAM::mergeSortedRuns(HDD& hdd) {
     pass = 1;
 
     int totalBuffers = capacity / page_size;
-    int B = totalBuffers - 1;
+
+    // not doing -1 because we set the ram capacity with 1 page size deducted for output buffer
+    int B = totalBuffers;
     int W = hdd.getNumOfSortedRuns();
 
     int X = (W-2) % (B-1) + 2;
@@ -189,6 +471,9 @@ TreeOfLosers& DRAM::getMergingTree() {
 
 void DRAM::prepareMergingTree(std::vector<std::vector<Row> >& sortedRuns, int sortedRunStIdx, int sortedRunEndIdx, int X) {
     // printf("sortedRunStIdx = %d | sortedRunEndIdx = %d | X = %d\n", sortedRunStIdx, sortedRunEndIdx, X);
+    
+
+    // TODO: Need to do this carefully can't just flush the RAM directly
     flushRAM();
     records.resize(capacity);
 
@@ -197,8 +482,8 @@ void DRAM::prepareMergingTree(std::vector<std::vector<Row> >& sortedRuns, int so
     }
     
     lastWinnerRunIdx = -1;
-    std::vector<int> temp;
-    mergingTree = std::make_unique<TreeOfLosers>(records, page_size, (sortedRunEndIdx - sortedRunStIdx + 1) * page_size, currentIndices, lastWinnerRunIdx, 0, false, temp);
+    std::vector<int> emptyIndirection;
+    mergingTree = std::make_unique<TreeOfLosers>(records, page_size, (sortedRunEndIdx - sortedRunStIdx + 1) * page_size, currentIndices, lastWinnerRunIdx, 0, false, emptyIndirection);
     mergingTree->initializeTree();
 
     outputBufferStIdx = capacity - page_size;
@@ -207,9 +492,14 @@ void DRAM::prepareMergingTree(std::vector<std::vector<Row> >& sortedRuns, int so
 
 void DRAM::cleanupMerging(HDD& hdd) {
     // Write any remaining rows in the output buffer to HDD
-    if (outputBufferIdx < capacity) {
-        hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + outputBufferIdx ));
+
+    if (!output_buffer.empty()) {
+        hdd.addBufferToMergedRun(output_buffer);
+        output_buffer.clear();
     }
+    // if (outputBufferIdx < capacity) {
+    //     hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + outputBufferIdx ));
+    // }
 
     hdd.appendMergedRunsToSortedRuns();
 }
@@ -221,8 +511,9 @@ Row DRAM::getNextSortedRow(HDD& hdd, int sortedRunStIdx, int X) {
 
     if(nextRow.offsetValue == INT_MAX) return nextRow;
     
-    records[outputBufferIdx] = nextRow;
-    outputBufferIdx += 1;
+    output_buffer.push_back(nextRow);
+    // records[outputBufferIdx] = nextRow;
+    // outputBufferIdx += 1;
 
     // check if lastWinnerRunIdx is at end of it's range then reload
     int endIdxForRun = (lastWinnerRunIdx+1) * page_size - 1;
@@ -241,11 +532,16 @@ Row DRAM::getNextSortedRow(HDD& hdd, int sortedRunStIdx, int X) {
         currentIndices[lastWinnerRunIdx] = lastWinnerRunIdx * page_size;
     }
 
-    if(outputBufferIdx >= capacity) {
-        // flush output buffer to hdd
-        hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + capacity ));
-        outputBufferIdx = outputBufferStIdx;
+    if(output_buffer.size() == page_size) {
+        hdd.addBufferToMergedRun(output_buffer);
+        output_buffer.clear();
     }
+
+    // if(outputBufferIdx >= capacity) {
+    //     // flush output buffer to hdd
+    //     hdd.addBufferToMergedRun(std::vector<Row>(records.begin() + outputBufferStIdx, records.begin() + capacity ));
+    //     outputBufferIdx = outputBufferStIdx;
+    // }
 
     return nextRow;
     
