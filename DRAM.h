@@ -34,6 +34,8 @@ public:
 
     void sortPartiallyFilledRam(HDD& hdd);
 
+    Row getSortedRowFromRAM();
+
     int outputBufferStIdx;
     int outputBufferIdx;
     int lastWinnerRunIdx;

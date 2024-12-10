@@ -12,7 +12,20 @@ HDD::~HDD () {
 }
 
 bool HDD::writeSortedRuns(std::vector<Row> sorted_run) {
-    sorted_runs.push_back(sorted_run);
+
+    int position = 0;
+    for (size_t i = 0; i < sorted_runs.size(); i++) {
+        if (sorted_runs[i].size() > sorted_runs.size()) {
+            break; // Found the correct position
+        }
+        position++;
+    }
+
+    // Insert the new vector at the found position
+    sorted_runs.insert(sorted_runs.begin() + position, sorted_run);
+
+
+    // sorted_runs.push_back(sorted_run);
     return true;
 }
 
@@ -39,6 +52,13 @@ void HDD::printSortedRuns() {
         printf("Run %d:\n", (i));
         printAllRecords1(sorted_runs[i]);
         printf("\n");
+    }
+}
+
+void HDD::printSortedRunsSize() {
+    printf("\nPrinting Sorted Runs Size\n");
+    for(int i=0;i<sorted_runs.size();i++) {
+        printf("Run %d  |  Size: %lu \n", (i), sorted_runs[i].size());
     }
 }
 

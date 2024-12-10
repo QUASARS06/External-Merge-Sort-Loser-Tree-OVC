@@ -33,7 +33,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
 		
-		// printf("\nAdding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
+		printf("Adding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 		dram->addRecord(row, *hdd);
 		// dram->printAllRecords();
 		// printf("\n\n");
@@ -53,7 +53,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 		++ _consumed;
 	}
-	dram->sortPartiallyFilledRam(*hdd);
+	
 
 	// hdd->printSortedRuns();
 
@@ -84,12 +84,23 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	printf("\n");
 	traceprintf ("%s consumed %lu rows\n", _plan->_name, (unsigned long) (_consumed));
 
+	// if we encountered 0 records do nothing
+	if(_consumed <= 0) return;
+	else if(_consumed <= actual_ram_capacity) {
+		dram->sortRecords(_consumed);
+	} 
+	else {
+		dram->sortPartiallyFilledRam(*hdd);
+	}
 
-    int expectedW = std::ceil(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
+	// dram->printAllRecords();
+
+    // int expectedW = std::ceil(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
+	int expectedW = (int)(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
 
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
     int B = totalBuffers - 1;
-    int W = hdd->getNumOfSortedRuns();
+    int W = _consumed <= actual_ram_capacity ? 1 : hdd->getNumOfSortedRuns();
 
 	int X = (W-2) % (B-1) + 2;
 
@@ -113,17 +124,19 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// but for other passes it's printed at the start of the merge pass
 	printf("------------------------- Pass 0 : Sorting -------------------------\n");
 
-
+	if(_consumed <= actual_ram_capacity) return;
 	// -------- Starting Merging --------
 
 	// In the case where the last run doesn't completely occupy memory it will be smaller than rest of runs
 	// Since we first only merge (W-2) % (B-1) + 2 runs to minimize I/O we need to merge smaller runs
 	// So from an implementation perspective I'll just move the smallest run at the start of the sorted runs
 	// which will make sure we are minimizing the I/O ( as per the volcano paper )
-	hdd->moveSmallerRunToStart();
+	// hdd->moveSmallerRunToStart();
 
 	// this will merge all sorted runs until the number of sorted runs is less than equal to merging buffers
 	dram->mergeSortedRuns(*hdd);
+
+	// hdd->printSortedRunsSize();
 
 	// this will prepare the loser tree for the final merge step
 	printf("------------------------- Pass %d : Merging -------------------------\n", dram->pass);
@@ -153,11 +166,14 @@ bool SortIterator::next (Row & row)
 {
 	TRACE (false);
 
-
+	// if we encountered 0 records do nothing
+	if(_consumed <= 0) return false;
+	
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
-    int B = totalBuffers - 1;
+	int B = totalBuffers - 1;
+
 	// Merge rows using TreeOfLosers
-    row = dram->getNextSortedRow(*hdd, 0, B);
+	row = (_consumed <= (_plan->ram_capacity - _plan->page_size)) ? dram->getSortedRowFromRAM() : dram->getNextSortedRow(*hdd, 0, B);
 
 	if(row.offsetValue == INT_MAX) {
 		dram->cleanupMerging(*hdd);

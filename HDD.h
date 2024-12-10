@@ -25,6 +25,8 @@ public:
     std::vector<Row>& getSingleSortedRun();
     bool isSingleSortedRunEmpty();
 
+    void printSortedRunsSize();
+
 private:
     std::vector<std::vector<Row> > sorted_runs;
     std::vector<Row> merged_run;

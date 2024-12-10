@@ -49,7 +49,8 @@ bool FilterIterator::next (Row & row)
 		++ _consumed;
 		
 		if ( (_plan->operator_type == '<' && row.columns[_plan->col_num] < _plan->value) ||
-		    (_plan->operator_type == '>' && row.columns[_plan->col_num] > _plan->value) )
+		    (_plan->operator_type == '>' && row.columns[_plan->col_num] > _plan->value) ||
+			(_plan->operator_type == '=' && row.columns[_plan->col_num] == _plan->value) )
 			break;
 
 		_input->free (row);

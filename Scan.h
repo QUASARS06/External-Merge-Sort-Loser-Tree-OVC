@@ -4,11 +4,13 @@ class ScanPlan : public Plan
 {
 	friend class ScanIterator;
 public:
-	ScanPlan (char const * const name, RowCount const count);
+	ScanPlan (char const * const name, RowCount const count, int const num_of_cols, int const col_val_domain);
 	~ScanPlan ();
 	Iterator * init () const;
 private:
 	RowCount const _count;
+	int const num_of_cols;
+	int const col_val_domain;
 }; // class ScanPlan
 
 class ScanIterator : public Iterator

@@ -1,10 +1,8 @@
 #include "Scan.h"
 
-# define NUM_OF_COLS 4
-# define COL_VAL_DOMAIN 7 
-
 // Scan Constructor
-ScanPlan::ScanPlan(char const *const name, RowCount const count) : Plan(name), _count(count)
+ScanPlan::ScanPlan(char const *const name, RowCount const count, int num_of_cols, int col_val_domain) 
+		: Plan(name), _count(count), num_of_cols(num_of_cols), col_val_domain(col_val_domain)
 {
 	TRACE(false);
 } // ScanPlan::ScanPlan
@@ -41,16 +39,18 @@ bool ScanIterator::next(Row &row)
 	TRACE(false);
 	if (_count >= _plan->_count) return false;
 	
-	std::vector<int> arr(NUM_OF_COLS);
+	std::vector<int> arr(_plan->num_of_cols);
 	
-    for (int i = 0 ; i < NUM_OF_COLS ; ++i) {
-		int a = rand() % COL_VAL_DOMAIN;
+    for (int i = 0 ; i < _plan->num_of_cols ; ++i) {
+		int a = rand() % _plan->col_val_domain;
         arr[i] = a;
     }
 
 	row.columns = arr;
 	row.offset = 0;
 	row.offsetValue = arr[0];
+
+	// printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 
 	++_count;
 	return true;
