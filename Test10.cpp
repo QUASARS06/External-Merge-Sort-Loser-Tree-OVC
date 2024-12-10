@@ -10,11 +10,11 @@ int main(int argc, char *argv[])
 
 	srand(static_cast<unsigned int>(time(0)));
 
-	printf("------------------------------ Test 1 --------------------------------\n");
-	printf("Description : Generates random rows and applies basic filter\n\n");
+	printf("------------------------------ Test 10 --------------------------------\n");
+	printf("Description : All Column Values in all Rows = 0 (see scan_type = 6 below)\n\n");
 
 	int num_of_cols = 4;	// number of columns in each Row of Database Record
-	int col_val_domain = 7;		// Domain of the column values within a Row
+	int col_val_domain = 10;		// Domain of the column values within a Row
 
 
 	// filter variables
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = 0;
-	int value = 1;
+	int value = -1;
 	char operator_type = '>';
 
 	if(col_num >= num_of_cols) {
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	// 5 - descending generated records
 	// 6 - all zeroes
 	// 7 - random negative records
-	int scan_type = 0;
+	int scan_type = 6;
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",

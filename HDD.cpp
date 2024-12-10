@@ -12,7 +12,7 @@ HDD::~HDD () {
 }
 
 bool HDD::writeSortedRuns(std::vector<Row> sorted_run) {
-    printf("Spilling - %lu records\n", sorted_run.size());
+    // printf("Spilling - %lu records\n", sorted_run.size());
     int position = 0;
     for (size_t i = 0; i < sorted_runs.size(); i++) {
         if (sorted_runs[i].size() > sorted_runs.size()) {

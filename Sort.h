@@ -28,4 +28,6 @@ private:
 	RowCount _consumed, _produced;
 	DRAM * dram;
 	HDD * hdd;
+
+	bool isSingleSortedRun;
 }; // class SortIterator

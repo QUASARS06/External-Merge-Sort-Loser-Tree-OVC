@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
 	}
 
 	printf("Filter: select * from rows where row.columns[%d] %c %d\n", col_num, operator_type, value);
-	printf("----------------------------------------------------------------------\n");
 
 
 	// RAM attributes
@@ -46,6 +45,13 @@ int main(int argc, char *argv[])
 	int page_size = 10;		// page_size = 20 means 1 page can store 20 records
 
 	int num_of_records = 2300;		// Total number of Rows/Records to be generated
+
+	printf("\nNumber of Columns - %d\n", num_of_cols);
+	printf("Domain of Column Values - %d\n", col_val_domain);
+	printf("\nRAM Capacity - %d\n", ram_capacity);
+	printf("Page Size - %d\n", page_size);
+	printf("Number of Input Rows - %d\n", num_of_records);
+	printf("----------------------------------------------------------------------\n");
 
     int B = (int)(ram_capacity / page_size) - 1;
 

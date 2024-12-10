@@ -67,6 +67,7 @@ bool WitnessIterator::next (Row & row)
     for (size_t i = 0; i < std::min(_prevRow.columns.size(), row.columns.size()); i++) {
         if (_prevRow.columns[i] > row.columns[i]) {
             _inversions++;
+			break;
         } else if (_prevRow.columns[i] < row.columns[i]) {
             // No need to check further; lexicographical order satisfied
             break;

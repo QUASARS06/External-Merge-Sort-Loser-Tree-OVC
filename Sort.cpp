@@ -20,7 +20,7 @@ Iterator * SortPlan::init () const
 
 SortIterator::SortIterator (SortPlan const * const plan) :
 	_plan (plan), _input (plan->_input->init ()),
-	_consumed (0), _produced (0)
+	_consumed (0), _produced (0), isSingleSortedRun(false)
 {
 	TRACE (false);
 
@@ -108,8 +108,8 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 	printf("\n-----------------------------------------\n");
     printf("RAM Parameters:\n");
-    printf("RAM Capacity - %d\n", _plan->ram_capacity);
-    printf("Page Size - %d\n", _plan->page_size);
+    // printf("RAM Capacity - %d\n", _plan->ram_capacity);
+    // printf("Page Size - %d\n", _plan->page_size);
     printf("Total Buffers - %d\n", totalBuffers);
     printf("B - %d (1 output buffer)\n", B);
     printf("Actual Number of Sorted Runs (W) - %d\n", W);
@@ -124,11 +124,12 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// but for other passes it's printed at the start of the merge pass
 	printf("------------------------- Pass 0 : Sorting -------------------------\n");
 
-	if(_consumed <= actual_ram_capacity || W == 1) {
-		// dram->printAllRecords();
-		// hdd->printSortedRuns();
+	if(_consumed <= actual_ram_capacity) return;
+	else if(hdd->getNumOfSortedRuns() == 1) {
+		isSingleSortedRun = true;
 		return;
 	}
+
 	// -------- Starting Merging --------
 
 	// In the case where the last run doesn't completely occupy memory it will be smaller than rest of runs
@@ -179,7 +180,7 @@ bool SortIterator::next (Row & row)
 	if(_consumed <= (_plan->ram_capacity - _plan->page_size)) {
 		row = dram->getSortedRowFromRAM();
 	}
-	else if(hdd->getNumOfSortedRuns() == 1) {
+	else if(isSingleSortedRun) {
 		// in this case we have one sorted run on HDD which needs to be loaded on RAM
 		row = dram->getRowFromSingleSortedRunOnHDD(*hdd);
 	}

@@ -28,6 +28,7 @@ Row DRAM::getSortedRowFromRAM() {
 
 Row DRAM::getRowFromSingleSortedRunOnHDD(HDD& hdd) {
     if(records.empty()) {
+        
         std::vector<Row>& hddSortedRun = hdd.getSortedRuns()[0];
 
         for(int i=0;i<capacity;i++) {
@@ -45,6 +46,8 @@ Row DRAM::getRowFromSingleSortedRunOnHDD(HDD& hdd) {
                         std::numeric_limits<int>::max()));
         }
     }
+
+    // printAllRecords();
 
     Row top = records.front();
     records.erase(records.begin());
