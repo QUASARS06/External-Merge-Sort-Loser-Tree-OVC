@@ -23,6 +23,8 @@ private:
     int treeSize;
     int pageSize;
 
+    int sortedRunSize;
+
     int& lastWinnerRunIdx;
 
     int sortedRunsIndexOffset;

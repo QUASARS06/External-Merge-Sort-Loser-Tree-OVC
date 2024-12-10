@@ -33,7 +33,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 
 	for (Row row;  _input->next (row);  _input->free (row)) {
 		
-		printf("Adding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
+		// printf("Adding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 		dram->addRecord(row, *hdd);
 		// dram->printAllRecords();
 		// printf("\n\n");

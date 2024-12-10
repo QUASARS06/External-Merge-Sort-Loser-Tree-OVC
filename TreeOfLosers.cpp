@@ -103,7 +103,7 @@ LoserTreeNode::~LoserTreeNode () {}
 TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, 
                            std::vector<int>& currentIndices, int& lastWinnerRunIdx, int sortedRunsIndexOffset, 
                            bool useIndirection, std::vector<int> indirection)
-    : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), 
+    : sortedRuns(sortedRuns), currentIndices(currentIndices), pageSize(pageSize), sortedRunSize(sortedRunSize),
       lastWinnerRunIdx(lastWinnerRunIdx), sortedRunsIndexOffset(sortedRunsIndexOffset), 
       useIndirection(useIndirection), indirection(indirection) 
     
@@ -162,7 +162,7 @@ Row& TreeOfLosers::getRow(int runIndex) {
 
         // find the bounds in the RAM for that run
         int startIdx = pageSize * runIndex;
-        int endIdx = startIdx + pageSize - 1;
+        int endIdx = std::min(startIdx + pageSize - 1, sortedRunSize-1);
 
         int currIdx = currentIndices[runIndex];
 
@@ -206,18 +206,18 @@ int TreeOfLosers::init(int currNodeIdx) {
     Row& leftRow = getRow(leftRunIdx);
     Row& rightRow = getRow(rightRunIdx);
 
-    Row* winnerRow = nullptr;
+    // Row* winnerRow = nullptr;
     Row* loserRow = nullptr;
     int winnerRunIdx = -1, loserRunIdx = -1;
 
     int comparisonsToDetermineLoser = 0;
     if (leftRow.isLessThan(rightRow, comparisonsToDetermineLoser)) {
-        winnerRow = &leftRow;
+        // winnerRow = &leftRow;
         loserRow = &rightRow;
         winnerRunIdx = leftRunIdx;
         loserRunIdx = rightRunIdx;
     } else {
-        winnerRow = &rightRow;
+        // winnerRow = &rightRow;
         loserRow = &leftRow;
         winnerRunIdx = rightRunIdx;
         loserRunIdx = leftRunIdx;

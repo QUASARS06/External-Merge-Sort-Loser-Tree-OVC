@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
 	srand(static_cast<unsigned int>(time(0)));
 
-	printf("------------------------------ Test 1 --------------------------------\n");
+	printf("------------------------------ Test 2 --------------------------------\n");
 	printf("Description : Generates random rows and applies basic filter\n\n");
 
 	int num_of_cols = 4;
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = 0;
-	int value = 0;
+	int value = -1;
 	char operator_type = '>';
 
 	if(col_num >= num_of_cols) {
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
 	int num_of_records = 23;
 
-	// std::srand(42);
+	std::srand(42);
 	// std::srand(1);
 
     int B = (int)(ram_capacity / page_size) - 1;
@@ -85,15 +85,14 @@ int main(int argc, char *argv[])
 	}
 
 	// scan_type helps determine the type of random records to generate
-	// 0 / default - random records
-	// 1 - all records same
-	// 2 - all column values same
-	// 3 - records same and values of columns also same
-	// 4 - ascending generated records
-	// 5 - descending generated records
-	// 6 - all zeroes
-	// 7 - random negative records
-	int scan_type = 7;
+	// 1 - random records
+	// 2 - all records same
+	// 3 - all column values same
+	// 4 - records as well as column values same
+	// 5 - ascending generated records
+	// 6 - descending generated records
+	// 7 - all zeroes
+	int scan_type = 1;
 
 	Plan *const plan =
 		new WitnessPlan ("output",

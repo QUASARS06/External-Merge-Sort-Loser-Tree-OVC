@@ -96,7 +96,7 @@ void ensurePageSize(std::vector<Row>& vec, size_t target_size, std::vector<Row>&
 }
 
 void DRAM::sortPartiallyFilledRam(HDD& hdd) {
-    printf("\nPARTIAL PTR = %d\n", ram_unsorted_ptr);
+    // printf("\nPARTIAL PTR = %d\n", ram_unsorted_ptr);
     if(ram_unsorted_ptr == capacity) {
         // printf("BANG!!\n");
         sortRecords(records.size());
@@ -113,6 +113,9 @@ void DRAM::sortPartiallyFilledRam(HDD& hdd) {
     // printAllRecords();
     // from 0 to ram_unsorted_ptr ram is sorted after that it is unsorted
     std::rotate(records.begin(), records.begin() + ram_unsorted_ptr, records.end());
+
+    // printAllRecords();
+
     sortRecords(capacity - ram_unsorted_ptr);
 
     // printf("\nPARTIAL SORT AFTER\n");
@@ -241,7 +244,7 @@ int getCacheSize(int num) {
     std::vector<int> divisors;
 
     // Find all divisors
-    for (int i = 1; i <= num / 2; ++i) {
+    for (int i = 2; i <= num / 2; ++i) {
         if (num % i == 0) {
             divisors.push_back(i);
         }
@@ -306,7 +309,8 @@ void DRAM::sortRecords(int sortingSize) {
     int winnerRunIdx = -1;
 
     // Cache Sized runs sorting
-    int cacheSize = getCacheSize(capacity);
+    int cacheSize = getCacheSize(sortingSize);
+    // printf("Sort Size = %d | Cache Size = %d\n", sortingSize, cacheSize);
     for(int i = 0; i < sortingSize; i += cacheSize) {
         int end = std::min(i + cacheSize, (int)sortingSize);
 
@@ -326,6 +330,15 @@ void DRAM::sortRecords(int sortingSize) {
         }
     }
 
+    // printf("Cache Done\n");
+    // printf("[");
+    // for(int i=0 ; i < sortedCacheRunsIndexes.size() ; i++) {
+    //     printf("%d", sortedCacheRunsIndexes[i]);
+    //     if(i < sortedCacheRunsIndexes.size()-1) printf(", ");
+    // }
+    // // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
+	// printf("]\n");
+
     std::vector<int> currIdx;    // Current index in each run
 
     TreeOfLosers sortingTree(records, cacheSize, sortingSize, currIdx, lastWinnerRunIdx, 0, true, sortedCacheRunsIndexes);
@@ -335,9 +348,21 @@ void DRAM::sortRecords(int sortingSize) {
 
     std::vector<int> sortIdx;
     while ((nextRow = sortingTree.getNextRow()).offsetValue != INT_MAX) {
+        // printf("LWI = %d\n", lastWinnerRunIdx);
         int tp = sortedCacheRunsIndexes[currIdx[lastWinnerRunIdx] - 1];
         sortIdx.push_back(tp);     
     }
+
+    // printf("GGG\n");
+
+    // printf("[");
+    // for(int i=0 ; i < sortIdx.size() ; i++) {
+    //     printf("%d", sortIdx[i]);
+    //     if(i < sortIdx.size()-1) printf(", ");
+    // }
+    // // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
+	// printf("]\n");
+
 
     sortInPlaceUsingSortIdx(sortIdx, sortingSize);
 

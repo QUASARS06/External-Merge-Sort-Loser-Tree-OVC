@@ -1,8 +1,8 @@
 #include "Scan.h"
 
 // Scan Constructor
-ScanPlan::ScanPlan(char const *const name, RowCount const count, int num_of_cols, int col_val_domain) 
-		: Plan(name), _count(count), num_of_cols(num_of_cols), col_val_domain(col_val_domain)
+ScanPlan::ScanPlan(char const *const name, RowCount const count, int num_of_cols, int col_val_domain, int scan_type) 
+		: Plan(name), _count(count), num_of_cols(num_of_cols), col_val_domain(col_val_domain), scan_type(scan_type) 
 {
 	TRACE(false);
 } // ScanPlan::ScanPlan
@@ -41,16 +41,71 @@ bool ScanIterator::next(Row &row)
 	
 	std::vector<int> arr(_plan->num_of_cols);
 	
-    for (int i = 0 ; i < _plan->num_of_cols ; ++i) {
-		int a = rand() % _plan->col_val_domain;
-        arr[i] = a;
+    switch (_plan->scan_type)
+    {
+        case 1: // All records same
+            if (_count == 0) {
+                for (int i = 0; i < _plan->num_of_cols; ++i) {
+                    arr[i] = rand() % _plan->col_val_domain;
+                }
+                fixed_record = arr; // Save for reuse
+            } else {
+                arr = fixed_record;
+            }
+            break;
+
+        case 2: // All column values same
+            {
+                int val = rand() % _plan->col_val_domain;
+                for (int i = 0; i < _plan->num_of_cols; ++i) {
+                    arr[i] = val;
+                }
+            }
+            break;
+
+        case 3: // Records and column values same
+            if (_count == 0) {
+                int val = rand() % _plan->col_val_domain;
+                arr.assign(_plan->num_of_cols, val); // All values in the record are `val`
+                fixed_record = arr;          // Save for reuse
+            } else {
+                arr = fixed_record;
+            }
+            break;
+
+        case 4: // Ascending records
+            for (int i = 0; i < _plan->num_of_cols; ++i) {
+                arr[i] = _count * _plan->col_val_domain / _plan->_count + i; // Scale by `_count`
+            }
+            break;
+
+        case 5: // Descending records
+            for (int i = 0; i < _plan->num_of_cols; ++i) {
+                arr[i] = (_plan->_count - _count - 1) * _plan->col_val_domain / _plan->_count - i; // Reverse scale
+            }
+            break;
+
+        case 6: // All zeroes
+            arr.assign(_plan->num_of_cols, 0);
+            break;
+		
+		case 7: // Random Negative records
+            for (int i = 0; i < _plan->num_of_cols; ++i) {
+                arr[i] = (rand() % _plan->col_val_domain) * -1;
+            }
+            break;
+		
+		default: // Random records
+            for (int i = 0; i < _plan->num_of_cols; ++i) {
+                arr[i] = rand() % _plan->col_val_domain;
+            }
     }
 
 	row.columns = arr;
 	row.offset = 0;
 	row.offsetValue = arr[0];
 
-	// printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
+	printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 
 	++_count;
 	return true;
