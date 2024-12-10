@@ -35,13 +35,13 @@ WitnessIterator::~WitnessIterator ()
 	TRACE (false);
 
 	delete _input;
-	printf("\n---------------------------------------------------------------------------------------------------\n");
+	printf("---------------------------------------------------------------------------------------------------------\n");
 	traceprintf ("%s witnessed %lu rows with parity %d and inversions %d\n",
 			_plan->_name,
 			(unsigned long) (_rows),
 			_parity,
 			_inversions);
-	printf("---------------------------------------------------------------------------------------------------\n");			
+	printf("---------------------------------------------------------------------------------------------------------\n");			
 } // WitnessIterator::~WitnessIterator
 
 bool WitnessIterator::next (Row & row)

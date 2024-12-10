@@ -10,18 +10,25 @@ int main(int argc, char *argv[])
 
 	srand(static_cast<unsigned int>(time(0)));
 
-	printf("------------------------------ Test 1 --------------------------------\n");
-	printf("Description : Generates random rows and applies basic filter\n\n");
+	printf("------------------------------ Test 3 --------------------------------\n");
+	printf("Description : Illustrates the Internal to External Graceful degradation\n");
+	printf("              No filter applied (to illustrate graceful degradation)\n");
+	printf("              RAM Capacity (M) = 20,000 and Input Rows (I) = 22,000\n\n");
+	printf("Note:         While it is expected to have 2 runs in this case, our code\n");
+	printf("              creates one larger run while only spilling as little as\n");
+	printf("              necessary to accomodatethe additional 2000 records on top\n");
+	printf("              of Memory Size (M)\n\n");
 
-	int num_of_cols = 4;
-	int col_val_domain = 7;
+	int num_of_cols = 4;	// number of columns in each Row of Database Record
+	int col_val_domain = 7;		// Domain of the column values within a Row
+
 
 	// filter variables
 	// below variables make the following filter : row.columns[col_num] |operator_type| value
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = 0;
-	int value = 0;
+	int value = -1;
 	char operator_type = '>';
 
 	if(col_num >= num_of_cols) {
@@ -37,43 +44,12 @@ int main(int argc, char *argv[])
 	printf("Filter: select * from rows where row.columns[%d] %c %d\n", col_num, operator_type, value);
 	printf("----------------------------------------------------------------------\n");
 
-	// RAM
 
+	// RAM attributes
+	int ram_capacity = 20500;	// number of records that can be stored in RAM
+	int page_size = 500;		// page_size = 20 means 1 page can store 20 records
 
-	// int ram_capacity = 12;	// number of records that can be stored in RAM
-	// int page_size = 2;
-
-	// int num_of_records = 22;
-	// int num_of_records = 20;
-
-
-	// int ram_capacity = 15;	// number of records that can be stored in RAM
-	// int page_size = 5;
-
-	// int num_of_records = 64;
-
-	// int ram_capacity = 20;	// number of records that can be stored in RAM
-	// int page_size = 4;
-
-	// int num_of_records = 64;
-
-	// int ram_capacity = 2000;	// number of records that can be stored in RAM
-	// int page_size = 40;
-
-	// int num_of_records = 40000;
-
-	// int ram_capacity = 2000;	// number of records that can be stored in RAM
-	// int page_size = 20;
-
-	// int num_of_records = 10000;
-
-	int ram_capacity = 15;	// number of records that can be stored in RAM
-	int page_size = 5;
-
-	int num_of_records = 23;
-
-	// std::srand(42);
-	// std::srand(1);
+	int num_of_records = 22000;		// Total number of Rows/Records to be generated
 
     int B = (int)(ram_capacity / page_size) - 1;
 
@@ -93,12 +69,12 @@ int main(int argc, char *argv[])
 	// 5 - descending generated records
 	// 6 - all zeroes
 	// 7 - random negative records
-	int scan_type = 7;
+	int scan_type = 0;
 
 	Plan *const plan =
-		new WitnessPlan ("output",
+		new WitnessPlan ("OUTPUT Witness",
 				new SortPlan ("*** The main thing! ***", ram_capacity, page_size,
-					new WitnessPlan ("input",
+					new WitnessPlan ("INPUT Witness",
 						new FilterPlan ("half", col_num, value, operator_type,
 							new ScanPlan ("source", num_of_records, num_of_cols, col_val_domain, scan_type)
 						)

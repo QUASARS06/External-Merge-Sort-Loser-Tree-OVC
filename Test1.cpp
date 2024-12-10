@@ -10,10 +10,8 @@ int main(int argc, char *argv[])
 
 	srand(static_cast<unsigned int>(time(0)));
 
-	printf("------------------------------ Test 2 --------------------------------\n");
-	printf("Description : Illustrates the 1-step to n-step Graceful degradation\n");
-	printf("              No filter applied (to illustrate graceful degradation)\n");
-	printf("              With W = 23 and B = 10 the initial merge fan-in should be 5\n\n");
+	printf("------------------------------ Test 1 --------------------------------\n");
+	printf("Description : Generates random rows and applies basic filter\n\n");
 
 	int num_of_cols = 4;	// number of columns in each Row of Database Record
 	int col_val_domain = 7;		// Domain of the column values within a Row
@@ -24,7 +22,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = 0;
-	int value = -1;
+	int value = 1;
 	char operator_type = '>';
 
 	if(col_num >= num_of_cols) {
@@ -42,10 +40,10 @@ int main(int argc, char *argv[])
 
 
 	// RAM attributes
-	int ram_capacity = 110;	// number of records that can be stored in RAM
-	int page_size = 10;		// page_size = 20 means 1 page can store 20 records
+	int ram_capacity = 2000;	// number of records that can be stored in RAM
+	int page_size = 400;		// page_size = 20 means 1 page can store 20 records
 
-	int num_of_records = 2300;		// Total number of Rows/Records to be generated
+	int num_of_records = 40000;		// Total number of Rows/Records to be generated
 
     int B = (int)(ram_capacity / page_size) - 1;
 

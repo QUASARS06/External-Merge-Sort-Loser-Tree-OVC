@@ -26,6 +26,31 @@ Row DRAM::getSortedRowFromRAM() {
     return top;
 }
 
+Row DRAM::getRowFromSingleSortedRunOnHDD(HDD& hdd) {
+    if(records.empty()) {
+        std::vector<Row>& hddSortedRun = hdd.getSortedRuns()[0];
+
+        for(int i=0;i<capacity;i++) {
+            if(hddSortedRun.empty()) break;
+
+            Row r = hddSortedRun.front();
+            records.push_back(r);
+            hddSortedRun.erase(hddSortedRun.begin());
+        }
+
+        // if records is still empty then hdd has no data left
+        if(hddSortedRun.empty()) {
+            hddSortedRun.push_back(Row({std::numeric_limits<int>::max()},
+                        std::numeric_limits<int>::min(),
+                        std::numeric_limits<int>::max()));
+        }
+    }
+
+    Row top = records.front();
+    records.erase(records.begin());
+    return top;
+}
+
 bool DRAM::addRecord(Row record, HDD& hdd) {
     if(records.size() < capacity) {
         // printf("HERE\n");
@@ -134,6 +159,7 @@ void DRAM::sortPartiallyFilledRam(HDD& hdd) {
 
     int idx = capacity - ram_unsorted_ptr - 1;
 
+    // drain output_buffer
     hdd.addOutputBufferToSingleSortedRun(output_buffer);
     output_buffer.clear();
 
@@ -201,6 +227,8 @@ void DRAM::sortPartiallyFilledRam(HDD& hdd) {
 
     hdd.clearEmptySortedRuns();
 
+    flushRAM();
+
 
     // At this point we have 2 sorted runs in the RAM
     // 1st run from 0 to (capacity - ram_unsorted_ptr - 1)
@@ -259,26 +287,6 @@ int getCacheSize(int num) {
         return divisors[size / 2]; // Return the middle one if odd
     }
 }
-
-// void DRAM::sortRecords() {
-//     std::vector<int> currentIndices;           // Current index in each run
-//     int lastWinnerRunIdx = -1;
-
-//     TreeOfLosers sortingTree(records, 1, records.size(), currentIndices, lastWinnerRunIdx);
-//     sortingTree.initializeTree();
-    
-
-//     std::vector<Row> temp_buffer;
-
-//     Row nextRow;
-//     while ((nextRow = sortingTree.getNextRow()).offsetValue != INT_MAX) {
-//         temp_buffer.push_back(nextRow);
-//         //printf("lastWinnerRunIdx = %d\n", lastWinnerRunIdx);
-//     }
-
-//     flushRAM();
-//     records = temp_buffer;
-// }
 
 void DRAM::sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N) {
     //size_t N = records.size();  // Get the size of records (and sortIdx)
@@ -493,7 +501,10 @@ Row DRAM::getNextSortedRow(HDD& hdd, int sortedRunStIdx, int X) {
 void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
 
     if(sortedRunStIdx == 0) {
-        printf("------------------------- Pass %d : Merging -------------------------\n", pass);
+        //printf("------------------------- Pass %d : Merging -------------------------\n", pass);
+        if(pass == 1) printf("------------------------- Pass %d : Merging (%d sorted runs & initial merge fan-in = %d) -------------------------\n", pass, hdd.getNumOfSortedRuns(), X);
+        else printf("------------------------- Pass %d : Merging (%d sorted runs) -------------------------\n", pass, hdd.getNumOfSortedRuns());
+        
         pass++;
     }
 

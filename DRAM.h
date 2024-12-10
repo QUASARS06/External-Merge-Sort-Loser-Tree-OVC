@@ -35,6 +35,7 @@ public:
     void sortPartiallyFilledRam(HDD& hdd);
 
     Row getSortedRowFromRAM();
+    Row getRowFromSingleSortedRunOnHDD(HDD& hdd);
 
     int outputBufferStIdx;
     int outputBufferIdx;

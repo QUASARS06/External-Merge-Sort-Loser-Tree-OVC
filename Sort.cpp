@@ -124,7 +124,11 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// but for other passes it's printed at the start of the merge pass
 	printf("------------------------- Pass 0 : Sorting -------------------------\n");
 
-	if(_consumed <= actual_ram_capacity) return;
+	if(_consumed <= actual_ram_capacity || W == 1) {
+		// dram->printAllRecords();
+		// hdd->printSortedRuns();
+		return;
+	}
 	// -------- Starting Merging --------
 
 	// In the case where the last run doesn't completely occupy memory it will be smaller than rest of runs
@@ -139,7 +143,7 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	// hdd->printSortedRunsSize();
 
 	// this will prepare the loser tree for the final merge step
-	printf("------------------------- Pass %d : Merging -------------------------\n", dram->pass);
+	printf("------------------------- Pass %d : Merging (%d sorted runs) -------------------------\n", dram->pass, hdd->getNumOfSortedRuns());
 
 	int mergingRunSt = 0;
     int mergingRunEnd = std::min(mergingRunSt + B, (int)W) - 1;
@@ -172,12 +176,16 @@ bool SortIterator::next (Row & row)
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
 	int B = totalBuffers - 1;
 
-	// Merge rows using TreeOfLosers
-	row = (_consumed <= (_plan->ram_capacity - _plan->page_size)) ? dram->getSortedRowFromRAM() : dram->getNextSortedRow(*hdd, 0, B);
-
-	if(row.offsetValue == INT_MAX) {
-		dram->cleanupMerging(*hdd);
-		return false;
+	if(_consumed <= (_plan->ram_capacity - _plan->page_size)) {
+		row = dram->getSortedRowFromRAM();
+	}
+	else if(hdd->getNumOfSortedRuns() == 1) {
+		// in this case we have one sorted run on HDD which needs to be loaded on RAM
+		row = dram->getRowFromSingleSortedRunOnHDD(*hdd);
+	}
+	else {
+		// Merge rows using TreeOfLosers
+		row = dram->getNextSortedRow(*hdd, 0, B);
 	}
 
 	// printf("[");
@@ -185,11 +193,15 @@ bool SortIterator::next (Row & row)
     //     printf("%d", row.columns[i]);
     //     if(i < row.columns.size()-1) printf(", ");
     // }
-    // // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
-	// printf("]\n");
+    // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
+	// // printf("]\n");
 
+	if(row.offsetValue == INT_MAX) {
+		dram->cleanupMerging(*hdd);
+		return false;
+	}
 
-	if (_produced >= _consumed)  return false;
+	if (_produced >= _consumed) return false;
 
 	++ _produced;
 	return true;

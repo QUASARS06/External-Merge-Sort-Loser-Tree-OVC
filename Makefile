@@ -132,4 +132,4 @@ co:
 	co $(REV) -l $(HDRS) $(SRCS) $(TEST_SRCS) $(DOCS) $(SCRS)
 
 clean:
-	@rm -f $(OBJS) $(TEST_EXES) *.stackdump trace
+	@rm -rf $(OBJS) $(TEST_EXES) *.stackdump trace *.o *.exe *.exe.dSYM

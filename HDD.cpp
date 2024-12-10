@@ -12,7 +12,7 @@ HDD::~HDD () {
 }
 
 bool HDD::writeSortedRuns(std::vector<Row> sorted_run) {
-
+    printf("Spilling - %lu records\n", sorted_run.size());
     int position = 0;
     for (size_t i = 0; i < sorted_runs.size(); i++) {
         if (sorted_runs[i].size() > sorted_runs.size()) {
@@ -98,18 +98,18 @@ void HDD::clearEmptySortedRuns() {
                                     sorted_runs.end());
 }
 
-void HDD::moveSmallerRunToStart() {
-    if (sorted_runs.size() < 2) return;
+// void HDD::moveSmallerRunToStart() {
+//     if (sorted_runs.size() < 2) return;
 
-    size_t firstSize = sorted_runs[0].size();
-    size_t lastSize = sorted_runs[sorted_runs.size() - 1].size();
+//     size_t firstSize = sorted_runs[0].size();
+//     size_t lastSize = sorted_runs[sorted_runs.size() - 1].size();
 
-    if (lastSize < firstSize) {
-        vector<Row> lastVector = sorted_runs[sorted_runs.size() - 1];
-        sorted_runs.pop_back();
-        sorted_runs.insert(sorted_runs.begin(), lastVector);
-    }
-}
+//     if (lastSize < firstSize) {
+//         vector<Row> lastVector = sorted_runs[sorted_runs.size() - 1];
+//         sorted_runs.pop_back();
+//         sorted_runs.insert(sorted_runs.begin(), lastVector);
+//     }
+// }
 
 void HDD::addOutputBufferToSingleSortedRun(std::vector<Row> outputBuffer) {
     single_sorted_run.insert(single_sorted_run.begin(), outputBuffer.begin(), outputBuffer.end());

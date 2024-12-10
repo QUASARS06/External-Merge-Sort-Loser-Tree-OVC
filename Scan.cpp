@@ -29,7 +29,7 @@ ScanIterator::ScanIterator(ScanPlan const *const plan) : _plan(plan), _count(0)
 ScanIterator::~ScanIterator()
 {
 	TRACE(false);
-	printf("\n------------------------------------------------------------------------\n");
+	printf("------------------------------------------------------------------------\n");
 	traceprintf("produced %lu of %lu rows\n", (unsigned long)(_count), (unsigned long)(_plan->_count));
 	printf("------------------------------------------------------------------------\n");
 } // ScanIterator::~ScanIterator
@@ -105,7 +105,7 @@ bool ScanIterator::next(Row &row)
 	row.offset = 0;
 	row.offsetValue = arr[0];
 
-	printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
+	// printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 
 	++_count;
 	return true;

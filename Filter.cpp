@@ -31,7 +31,7 @@ FilterIterator::~FilterIterator ()
 
 	delete _input;
 
-	printf("\n------------------------------------------------------------------------\n");
+	printf("------------------------------------------------------------------------\n");
 	traceprintf ("produced %lu of %lu rows\n",
 			(unsigned long) (_produced),
 			(unsigned long) (_consumed));
