@@ -35,49 +35,9 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 		
 		// printf("Adding record '%llu' [%d, %d, %d, %d]\n", (_consumed + 1), row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 		dram->addRecord(row, *hdd);
-		// dram->printAllRecords();
-		// printf("\n\n");
-
-		// if(dram->isFull()) {
-		// 	// printf("\nBefore Sorting:\n");
-		// 	// dram->printAllRecords();
-
-		// 	dram->sortRecords();
-
-		// 	// printf("\nAfter Sorting:\n");
-		// 	// dram->printAllRecords();
-
-		// 	hdd->writeSortedRuns(dram->getAllRecords());
-		// 	dram->flushRAM();
-		// }
 
 		++ _consumed;
 	}
-	
-
-	// hdd->printSortedRuns();
-
-	// dram->printAllRecords();
-
-	// hdd->printSingleSortedRun();
-
-	// dram->printOutputBuffer();
-
-	// dram->printOutputBuffer();
-
-	// if ram is not full but there are still records in it then we need to sort and write them to hdd
-	// if(!dram->isEmpty()) {
-	// 	// printf("\nBefore Sorting:\n");
-	// 	// dram->printAllRecords();
-
-	// 	dram->sortRecords();
-
-	// 	// printf("\nAfter Sorting:\n");
-	// 	// dram->printAllRecords();
-
-	// 	hdd->writeSortedRuns(dram->getAllRecords());
-	// 	dram->flushRAM();
-	// }
 
 	delete _input;
 
@@ -88,15 +48,19 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	if(_consumed <= 0) return;
 	else if(_consumed <= actual_ram_capacity) {
 		dram->sortRecords(_consumed);
+		printf("\n----------------------------------------------------------------------------\n");
+		printf("HDD Total Spill after Sorting - %d (0 since ram can accomodate whole input)\n", hdd->getSpillCount());
+		printf("----------------------------------------------------------------------------\n");
 	} 
 	else {
 		dram->sortPartiallyFilledRam(*hdd);
 	}
 
+
 	// dram->printAllRecords();
 
     // int expectedW = std::ceil(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
-	int expectedW = (int)(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
+	int expectedW = _consumed <= actual_ram_capacity ? 1 : (int)(_consumed*1.0 / (_plan->ram_capacity - _plan->page_size));
 
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
     int B = totalBuffers - 1;
@@ -172,7 +136,12 @@ bool SortIterator::next (Row & row)
 	TRACE (false);
 
 	// if we encountered 0 records do nothing
-	if(_consumed <= 0) return false;
+	if(_consumed <= 0) {
+		printf("\n----------------------------------\n");
+		printf("HDD Total Spill Count - %d\n", hdd->getSpillCount());
+		printf("----------------------------------\n");
+		return false;
+	}
 	
 	int totalBuffers = _plan->ram_capacity / _plan->page_size;
 	int B = totalBuffers - 1;
@@ -199,10 +168,18 @@ bool SortIterator::next (Row & row)
 
 	if(row.offsetValue == INT_MAX) {
 		dram->cleanupMerging(*hdd);
+		printf("\n------------------------------------------------\n");
+		printf("HDD Total Spill Count - %d (%.3f x I)\n", hdd->getSpillCount(), (hdd->getSpillCount() * 1.0) / _consumed);
+		printf("------------------------------------------------\n");
 		return false;
 	}
 
-	if (_produced >= _consumed) return false;
+	if (_produced >= _consumed) {
+		printf("\n------------------------------------------------\n");
+		printf("HDD Total Spill Count - %d (%.3f x I)\n", hdd->getSpillCount(), (hdd->getSpillCount() * 1.0) / _consumed);
+		printf("------------------------------------------------\n");
+		return false;
+	}
 
 	++ _produced;
 	return true;

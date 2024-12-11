@@ -27,10 +27,14 @@ public:
 
     void printSortedRunsSize();
 
+    int getSpillCount();
+    void addSingleSortedRunCountToSpillCount();
+
 private:
     std::vector<std::vector<Row> > sorted_runs;
     std::vector<Row> merged_run;
-
     std::vector<Row> single_sorted_run;
+
+    int spill_count;
 
 }; // class DRAM

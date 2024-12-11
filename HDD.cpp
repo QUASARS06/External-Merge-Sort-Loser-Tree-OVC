@@ -13,9 +13,10 @@ HDD::~HDD () {
 
 bool HDD::writeSortedRuns(std::vector<Row> sorted_run) {
     // printf("Spilling - %lu records\n", sorted_run.size());
+    spill_count += sorted_run.size();
     int position = 0;
     for (size_t i = 0; i < sorted_runs.size(); i++) {
-        if (sorted_runs[i].size() > sorted_runs.size()) {
+        if (sorted_runs[i].size() > sorted_run.size()) {
             break; // Found the correct position
         }
         position++;
@@ -67,7 +68,8 @@ void HDD::printMergedRuns() {
 }
 
 void HDD::appendMergedRunsToSortedRuns() {
-    sorted_runs.push_back(merged_run);
+    writeSortedRuns(merged_run);
+    //sorted_runs.push_back(merged_run);
 
     // Clear mergedRun for future use
     merged_run.clear();
@@ -112,6 +114,7 @@ void HDD::clearEmptySortedRuns() {
 // }
 
 void HDD::addOutputBufferToSingleSortedRun(std::vector<Row> outputBuffer) {
+    //spill_count += outputBuffer.size();
     single_sorted_run.insert(single_sorted_run.begin(), outputBuffer.begin(), outputBuffer.end());
 }
 
@@ -131,4 +134,12 @@ std::vector<Row>& HDD::getSingleSortedRun() {
 
 bool HDD::isSingleSortedRunEmpty() {
     return single_sorted_run.empty();
+}
+
+void HDD::addSingleSortedRunCountToSpillCount() {
+    spill_count += single_sorted_run.size();
+}
+
+int HDD::getSpillCount() {
+    return spill_count;
 }

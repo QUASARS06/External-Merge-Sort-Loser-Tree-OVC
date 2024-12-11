@@ -37,7 +37,10 @@ ScanIterator::~ScanIterator()
 bool ScanIterator::next(Row &row)
 {
 	TRACE(false);
-	if (_count >= _plan->_count) return false;
+	if (_count >= _plan->_count) {
+        printf("DONE GENERATING\n");
+        return false;
+    }
 	
 	std::vector<int> arr(_plan->num_of_cols);
 	

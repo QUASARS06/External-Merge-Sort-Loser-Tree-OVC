@@ -134,6 +134,9 @@ void DRAM::sortPartiallyFilledRam(HDD& hdd) {
 
         records.clear();
 
+        printf("\n-----------------------------------------------------------------------------------------\n");
+        printf("HDD Total Spill after Sorting - %d (Spill <= Row Count due to Graceful Degradation)\n", hdd.getSpillCount());
+        printf("-----------------------------------------------------------------------------------------\n");
         return;
     }
 
@@ -165,6 +168,11 @@ void DRAM::sortPartiallyFilledRam(HDD& hdd) {
     // drain output_buffer
     hdd.addOutputBufferToSingleSortedRun(output_buffer);
     output_buffer.clear();
+
+    hdd.addSingleSortedRunCountToSpillCount();
+    printf("\n-----------------------------------------------------------------------------------------\n");
+    printf("HDD Total Spill after Sorting - %d (Spill <= Row Count due to Graceful Degradation)\n", hdd.getSpillCount());
+    printf("-----------------------------------------------------------------------------------------\n");
 
     std::vector<Row>& spilledSortedRun = hdd.getSingleSortedRun();
 
@@ -508,6 +516,9 @@ void DRAM::mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X) {
         if(pass == 1) printf("------------------------- Pass %d : Merging (%d sorted runs & initial merge fan-in = %d) -------------------------\n", pass, hdd.getNumOfSortedRuns(), X);
         else printf("------------------------- Pass %d : Merging (%d sorted runs) -------------------------\n", pass, hdd.getNumOfSortedRuns());
         
+        // printf("HDD Total Spill Count - %d\n", hdd.getSpillCount());
+        // hdd.printSortedRunsSize();
+
         pass++;
     }
 
