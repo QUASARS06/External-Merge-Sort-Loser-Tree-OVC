@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 10 --------------------------------\n");
-	printf("Description : All Column Values in all Rows = 0 (see scan_type = 6 below)\n\n");
+	printf("Description : Random Negative Numbers (see scan_type = 7 below)\n\n");
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = argMap.find("-fc") != argMap.end() ? std::atoi(argMap["-fc"].c_str()) : 0;
-	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1;
-	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '>';
+	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : 1;
+	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '<';
 
 	if(col_num >= num_of_cols) {
 		printf("Column Number provided Out of Bounds (col_num should be <= %d)\n", (num_of_cols-1));
@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
-	printf("\nRAM Capacity - %d\n", ram_capacity);
+	printf("\nRAM Capacity (M) - %d\n", ram_capacity);
 	printf("Page Size - %d\n", page_size);
-	printf("Number of Input Rows - %d\n", num_of_records);
+	printf("Number of Input Rows (I) - %d (%0.1f x M)\n", num_of_records, (num_of_records*1.0/(ram_capacity-page_size)));
 	printf("----------------------------------------------------------------------\n");
 
     int B = (int)(ram_capacity / page_size) - 1;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	// 5 - descending generated records
 	// 6 - all zeroes
 	// 7 - random negative records
-	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 6;
+	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 7;
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",

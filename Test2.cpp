@@ -24,9 +24,13 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 2 --------------------------------\n");
-	printf("Description : Illustrates the 1-step to n-step Graceful degradation\n");
+	printf("Description : Illustrates the Internal to External Graceful degradation\n");
 	printf("              No filter applied (to illustrate graceful degradation)\n");
-	printf("              With W = 23 and B = 10 the initial merge fan-in should be 5\n\n");
+	printf("              RAM Capacity (M) = 20,000 and Input Rows (I) = 22,000\n\n");
+	printf("Note:         While it is expected to have 2 runs in this case, our code\n");
+	printf("              creates one larger run while only spilling as little as\n");
+	printf("              necessary to accomodatethe additional 2000 records on top\n");
+	printf("              of Memory Size (M)\n\n");
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
@@ -59,19 +63,19 @@ int main(int argc, char *argv[])
 	// RAM attributes
 
 	// number of records that can be stored in RAM
-	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 110;
+	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 20500;
 
 	// page_size = 20 means 1 page can store 20 records
-	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 10;
+	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 500;
 
 	// Total number of Rows/Records to be generated
-	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 2300;
+	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 22000;
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
-	printf("\nRAM Capacity - %d\n", ram_capacity);
+	printf("\nRAM Capacity (M) - %d\n", ram_capacity);
 	printf("Page Size - %d\n", page_size);
-	printf("Number of Input Rows - %d\n", num_of_records);
+	printf("Number of Input Rows (I) - %d (%0.1f x M)\n", num_of_records, (num_of_records*1.0/(ram_capacity-page_size)));
 	printf("----------------------------------------------------------------------\n");
 
     int B = (int)(ram_capacity / page_size) - 1;

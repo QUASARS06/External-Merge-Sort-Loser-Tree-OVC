@@ -13,7 +13,6 @@ A brief description of what this project does and who it's for.
 Below table shows the arguments which can be passed to the Test program. A sample invocation to any test would look like this:
 
 > ./Test1.exe -p 400 -r 2000 -n 40000 -c 4 -d 7 -fc 0 -fv 1 -fo '>' -s 0  
-> ./Test1.exe -p 500 -r 20500 -n 22000 -c 5 -d 10 -fc 1 -fv 1 -fo '>' -s 0   
 
 Note: The filter operator needs to be wrapped by single quotes to avoid shell to interpret it as a redirection
 

@@ -24,7 +24,9 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 1 --------------------------------\n");
-	printf("Description : Generates random rows and applies basic filter\n\n");
+	printf("Description : Illustrates the 1-step to n-step Graceful degradation\n");
+	printf("              No filter applied and small I and M as aim is to illustrate graceful degradation)\n");
+	printf("              With W = 23 and B = 10 the initial merge fan-in should be 5\n\n");
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = argMap.find("-fc") != argMap.end() ? std::atoi(argMap["-fc"].c_str()) : 0;
-	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : 1;
+	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1;
 	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '>';
 
 	if(col_num >= num_of_cols) {
@@ -57,19 +59,19 @@ int main(int argc, char *argv[])
 	// RAM attributes
 
 	// number of records that can be stored in RAM
-	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 2000;
+	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 110;
 
 	// page_size = 20 means 1 page can store 20 records
-	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 400;
+	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 10;
 
 	// Total number of Rows/Records to be generated
-	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 40000;
+	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 2300;
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
-	printf("\nRAM Capacity - %d\n", ram_capacity);
+	printf("\nRAM Capacity (M) - %d\n", ram_capacity);
 	printf("Page Size - %d\n", page_size);
-	printf("Number of Input Rows - %d\n", num_of_records);
+	printf("Number of Input Rows (I) - %d (%0.1f x M)\n", num_of_records, (num_of_records*1.0/(ram_capacity-page_size)));
 	printf("----------------------------------------------------------------------\n");
 
     int B = (int)(ram_capacity / page_size) - 1;
@@ -91,7 +93,6 @@ int main(int argc, char *argv[])
 	// 6 - all zeroes
 	// 7 - random negative records
 	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 0;
-	
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 			);
 
 	Iterator *const it = plan->init();
-	
+
 	it->run();
 	delete it;
 

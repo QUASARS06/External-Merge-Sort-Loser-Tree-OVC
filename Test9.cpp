@@ -24,13 +24,13 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 9 --------------------------------\n");
-	printf("Description : Descending Rows (see scan_type = 5 below)\n\n");
+	printf("Description : All Column Values in all Rows = 0 (see scan_type = 6 below)\n\n");
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
 
 	// Domain of the column values within a Row
-	int col_val_domain = argMap.find("-d") != argMap.end() ? std::atoi(argMap["-d"].c_str()) : 100000;
+	int col_val_domain = argMap.find("-d") != argMap.end() ? std::atoi(argMap["-d"].c_str()) : 10;
 
 
 	// filter variables
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = argMap.find("-fc") != argMap.end() ? std::atoi(argMap["-fc"].c_str()) : 0;
-	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1*col_val_domain;
+	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1;
 	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '>';
 
 	if(col_num >= num_of_cols) {
@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
-	printf("\nRAM Capacity - %d\n", ram_capacity);
+	printf("\nRAM Capacity (M) - %d\n", ram_capacity);
 	printf("Page Size - %d\n", page_size);
-	printf("Number of Input Rows - %d\n", num_of_records);
+	printf("Number of Input Rows (I) - %d (%0.1f x M)\n", num_of_records, (num_of_records*1.0/(ram_capacity-page_size)));
 	printf("----------------------------------------------------------------------\n");
 
     int B = (int)(ram_capacity / page_size) - 1;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	// 5 - descending generated records
 	// 6 - all zeroes
 	// 7 - random negative records
-	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 5;
+	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 6;
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",

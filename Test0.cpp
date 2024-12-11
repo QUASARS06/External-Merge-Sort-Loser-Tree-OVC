@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 
 	srand(static_cast<unsigned int>(time(0)));
 
-	printf("------------------------------ Test 4 --------------------------------\n");
-	printf("Description : Zero Records\n\n");
+	printf("------------------------------ Test 0 --------------------------------\n");
+	printf("Description : Generates random rows and applies basic filter\n\n");
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
 	int col_num = argMap.find("-fc") != argMap.end() ? std::atoi(argMap["-fc"].c_str()) : 0;
-	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1;
+	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : 1;
 	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '>';
 
 	if(col_num >= num_of_cols) {
@@ -57,13 +57,13 @@ int main(int argc, char *argv[])
 	// RAM attributes
 
 	// number of records that can be stored in RAM
-	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 20500;
+	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 2000;
 
 	// page_size = 20 means 1 page can store 20 records
-	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 500;
+	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 400;
 
 	// Total number of Rows/Records to be generated
-	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 0;
+	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 40000;
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 	// 6 - all zeroes
 	// 7 - random negative records
 	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 0;
+	
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",
@@ -104,7 +105,7 @@ int main(int argc, char *argv[])
 			);
 
 	Iterator *const it = plan->init();
-
+	
 	it->run();
 	delete it;
 
