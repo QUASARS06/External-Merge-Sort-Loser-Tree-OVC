@@ -24,5 +24,5 @@ public:
 private:
 	ScanPlan const * const _plan;
 	RowCount _count;
-	std::vector<int> fixed_record;
+	std::vector<int> fixed_record;	// used when we need all records to be same
 }; // class ScanIterator

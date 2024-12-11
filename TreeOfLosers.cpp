@@ -129,13 +129,6 @@ TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sorte
     // actual number of nodes in the Tree of Losers (Priority Queue Array)
     treeSize = (int)std::pow(2.0, loserTreeHeight - 1) + (int)std::ceil(numOfRuns / 2.0) - 1;
 
-    // printf("\npageSize = %d\n", pageSize);
-    // printf("sortedRunSize = %d\n", sortedRunSize);
-    // printf("loserTreeHeight = %d\n", loserTreeHeight);
-    // printf("numOfLoserNodes = %d\n", numOfLoserNodes);
-    // printf("numOfRuns = %d\n", numOfRuns);
-    // printf("treeSize = %d\n\n", treeSize);
-
     // Clear and resize currentIndices
     currentIndices.clear();
     currentIndices.resize(numOfRuns);
@@ -206,27 +199,19 @@ int TreeOfLosers::init(int currNodeIdx) {
     Row& leftRow = getRow(leftRunIdx);
     Row& rightRow = getRow(rightRunIdx);
 
-    // Row* winnerRow = nullptr;
     Row* loserRow = nullptr;
     int winnerRunIdx = -1, loserRunIdx = -1;
 
     int comparisonsToDetermineLoser = 0;
     if (leftRow.isLessThan(rightRow, comparisonsToDetermineLoser)) {
-        // winnerRow = &leftRow;
         loserRow = &rightRow;
         winnerRunIdx = leftRunIdx;
         loserRunIdx = rightRunIdx;
     } else {
-        // winnerRow = &rightRow;
         loserRow = &leftRow;
         winnerRunIdx = rightRunIdx;
         loserRunIdx = leftRunIdx;
     }
-
-    // std::string loserOvc = loserRow->findOVC(*winnerRow);
-    // size_t delimiterPos = loserOvc.find("@");
-    // loserRow->offset = std::stoi(loserOvc.substr(0, delimiterPos));
-    // loserRow->offsetValue = std::stoi(loserOvc.substr(delimiterPos + 1));
 
     if(comparisonsToDetermineLoser > 0) {
         int row_len = loserRow->columns.size();
@@ -275,13 +260,6 @@ void TreeOfLosers::updateTree(int competitorRunIndex) {
         Row& competitorRow = getRow(competitorRunIndex);
 
         int comparisonsToDetermineLoser = 0;
-        // if (currRow.offset != competitorRow.offset) {
-        //     if (currRow.offset > competitorRow.offset) didCurrWin = true;
-        // } else if (currRow.offsetValue != competitorRow.offsetValue) {
-        //     if (currRow.offsetValue < competitorRow.offsetValue) didCurrWin = true;
-        // } else {
-        //     if (currRow.isLessThan(competitorRow)) didCurrWin = true;
-        // }
 
         if (currRow.isLessThan(competitorRow, comparisonsToDetermineLoser)) {
             didCurrWin = true;
@@ -289,14 +267,6 @@ void TreeOfLosers::updateTree(int competitorRunIndex) {
 
         if (didCurrWin) {
             loserTree[currLoserTreeNodeIndex].runIndex = competitorRunIndex;
-
-            // printf("OLD OVC Loser [%d, %d, %d, %d] => Offset: %d | Offset Value: %d\n", competitorRow.columns[0], competitorRow.columns[1], competitorRow.columns[2], competitorRow.columns[3], competitorRow.offset, competitorRow.offsetValue);
-            // printf("OLD OVC Winner [%d, %d, %d, %d] => Offset: %d | Offset Value: %d\n", currRow.columns[0], currRow.columns[1], currRow.columns[2], currRow.columns[3], currRow.offset, currRow.offsetValue);
-
-            // std::string newOvc = competitorRow.findOVC(currRow);
-            // int delimiterPos = newOvc.find("@");
-            // competitorRow.offset = std::stoi(newOvc.substr(0, delimiterPos));
-            // competitorRow.offsetValue = std::stoi(newOvc.substr(delimiterPos + 1));
 
             if(comparisonsToDetermineLoser > 0) {
                 int row_len = competitorRow.columns.size();
@@ -310,15 +280,8 @@ void TreeOfLosers::updateTree(int competitorRunIndex) {
                 }
             }
 
-            // printf("NEW OVC Loser [%d, %d, %d, %d] => Offset: %d | Offset Value: %d\n", competitorRow.columns[0], competitorRow.columns[1], competitorRow.columns[2], competitorRow.columns[3], competitorRow.offset, competitorRow.offsetValue);
-            // printf("comparisonsToDetermineLoser = %d\n\n", comparisonsToDetermineLoser);
-
             competitorRunIndex = currLoserTreeNodeRunIndex;
         } else {
-            // std::string newOvc = currRow.findOVC(competitorRow);
-            // int delimiterPos = newOvc.find("@");
-            // currRow.offset = std::stoi(newOvc.substr(0, delimiterPos));
-            // currRow.offsetValue = std::stoi(newOvc.substr(delimiterPos + 1));
             
             if(comparisonsToDetermineLoser > 0) {
                 int row_len = currRow.columns.size();

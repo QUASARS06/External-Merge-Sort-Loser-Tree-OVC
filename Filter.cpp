@@ -32,9 +32,7 @@ FilterIterator::~FilterIterator ()
 	delete _input;
 
 	printf("------------------------------------------------------------------------\n");
-	traceprintf ("produced %lu of %lu rows\n",
-			(unsigned long) (_produced),
-			(unsigned long) (_consumed));
+	traceprintf ("produced %lu of %lu rows\n", (unsigned long) (_produced), (unsigned long) (_consumed));
 	printf("------------------------------------------------------------------------\n");
 } // FilterIterator::~FilterIterator
 
@@ -48,9 +46,9 @@ bool FilterIterator::next (Row & row)
 
 		++ _consumed;
 		
-		if ( (_plan->operator_type == '<' && row.columns[_plan->col_num] < _plan->value) ||
+		if ((_plan->operator_type == '<' && row.columns[_plan->col_num] < _plan->value) ||
 		    (_plan->operator_type == '>' && row.columns[_plan->col_num] > _plan->value) ||
-			(_plan->operator_type == '=' && row.columns[_plan->col_num] == _plan->value) )
+			(_plan->operator_type == '=' && row.columns[_plan->col_num] == _plan->value))
 			break;
 
 		_input->free (row);

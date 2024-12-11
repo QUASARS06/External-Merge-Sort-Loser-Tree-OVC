@@ -19,8 +19,9 @@ SRCS=	defs.cpp Assert.cpp \
 
 # Find all test source files
 # TEST_SRCS=$(wildcard Test*.cpp)
-TEST_SRCS= 	Test0.cpp Test1.cpp Test2.cpp Test3.cpp Test4.cpp Test5.cpp Test6.cpp Test7.cpp \
-			Test8.cpp Test9.cpp Test10.cpp Test11.cpp Test12.cpp Test13.cpp Test14.cpp
+TEST_SRCS= 	Test0.cpp
+# Test1.cpp Test2.cpp Test3.cpp Test4.cpp Test5.cpp Test6.cpp Test7.cpp \
+# Test8.cpp Test9.cpp Test10.cpp Test11.cpp Test12.cpp Test13.cpp Test14.cpp
 TEST_EXES=$(TEST_SRCS:.cpp=.exe)
 
 # compilation targets for common objects

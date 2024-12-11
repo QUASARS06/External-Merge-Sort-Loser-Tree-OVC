@@ -37,10 +37,7 @@ ScanIterator::~ScanIterator()
 bool ScanIterator::next(Row &row)
 {
 	TRACE(false);
-	if (_count >= _plan->_count) {
-        // printf("DONE GENERATING\n");
-        return false;
-    }
+	if (_count >= _plan->_count) return false;
 	
 	std::vector<int> arr(_plan->num_of_cols);
 	
@@ -78,13 +75,13 @@ bool ScanIterator::next(Row &row)
 
         case 4: // Ascending records
             for (int i = 0; i < _plan->num_of_cols; ++i) {
-                arr[i] = _count * _plan->col_val_domain / _plan->_count + i; // Scale by `_count`
+                arr[i] = _count * _plan->col_val_domain / _plan->_count + i;
             }
             break;
 
         case 5: // Descending records
             for (int i = 0; i < _plan->num_of_cols; ++i) {
-                arr[i] = (_plan->_count - _count - 1) * _plan->col_val_domain / _plan->_count - i; // Reverse scale
+                arr[i] = (_plan->_count - _count - 1) * _plan->col_val_domain / _plan->_count - i;
             }
             break;
 
@@ -107,8 +104,6 @@ bool ScanIterator::next(Row &row)
 	row.columns = arr;
 	row.offset = 0;
 	row.offsetValue = arr[0];
-
-	// printf("\nGenerated [%d, %d, %d, %d]\n", row.columns[0], row.columns[1], row.columns[2], row.columns[3]);
 
 	++_count;
 	return true;

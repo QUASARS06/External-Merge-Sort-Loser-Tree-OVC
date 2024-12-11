@@ -11,12 +11,7 @@ public:
 	~DRAM ();
 
     bool addRecord(Row record, HDD& hdd);
-    void printAllRecords();
-    std::vector<Row> getAllRecords();
     void flushRAM();
-    bool isFull();
-    bool isEmpty();
-    int getCapacity();
 
     void sortRecords(int sortingSize);
     void mergeSortedRuns(HDD& hdd);
@@ -30,7 +25,7 @@ public:
 
     void sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N);
 
-    void printOutputBuffer();
+    
 
     void sortPartiallyFilledRam(HDD& hdd);
 
@@ -41,7 +36,6 @@ public:
     int outputBufferIdx;
     int lastWinnerRunIdx;
     std::vector<int> currentIndices;
-    //TreeOfLosers mergingTree;
     std::unique_ptr<TreeOfLosers> mergingTree;
 
     int pass;

@@ -29,5 +29,5 @@ private:
 	DRAM * dram;
 	HDD * hdd;
 
-	bool isSingleSortedRun;
+	bool isSingleSortedRun;	// if we have only one run after internal sorting then this flag helps in application logic
 }; // class SortIterator

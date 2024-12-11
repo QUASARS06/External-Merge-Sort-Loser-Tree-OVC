@@ -12,11 +12,6 @@ WitnessPlan::~WitnessPlan ()
 	delete _input;
 } // WitnessPlan::~WitnessPlan
 
-
-// ------------------------------------------------------------
-// -------------------- WITNESS ITERATOR ----------------------
-// ------------------------------------------------------------
-
 Iterator * WitnessPlan::init () const
 {
 	TRACE (false);
@@ -37,10 +32,7 @@ WitnessIterator::~WitnessIterator ()
 	delete _input;
 	printf("---------------------------------------------------------------------------------------------------------\n");
 	traceprintf ("%s witnessed %lu rows with parity %d and inversions %d\n",
-			_plan->_name,
-			(unsigned long) (_rows),
-			_parity,
-			_inversions);
+			_plan->_name, (unsigned long) (_rows), _parity, _inversions);
 	printf("---------------------------------------------------------------------------------------------------------\n");			
 } // WitnessIterator::~WitnessIterator
 
@@ -55,15 +47,6 @@ bool WitnessIterator::next (Row & row)
 	for(size_t i = 0; i < row.columns.size(); i++) _parity ^= (row.columns[i] << i);
 
 	// inversions count
-	// for(size_t i = 0; i < row.columns.size(); i++) {
-	// 	for(size_t j = 0; j < _prevRow.columns.size(); j++) {
-	// 		if (row.columns[i] > _prevRow.columns[j]) {
-	// 			_inversions++;
-	// 		}
-	// 	}
-	// }
-
-	// Compare element-wise
     for (size_t i = 0; i < std::min(_prevRow.columns.size(), row.columns.size()); i++) {
         if (_prevRow.columns[i] > row.columns[i]) {
             _inversions++;
@@ -73,14 +56,6 @@ bool WitnessIterator::next (Row & row)
             break;
         }
     }
-
-	// printf("[");
-    // for(int i=0 ; i < row.columns.size() ; i++) {
-    //     printf("%d", row.columns[i]);
-    //     if(i < row.columns.size()-1) printf(", ");
-    // }
-    // // printf("]  |  Offset = %d  |  Offset Value = %d\n", row.offset, row.offsetValue);
-	// printf("]  |  Inversions = %d\n", _inversions);
 
 	_prevRow = row;
 

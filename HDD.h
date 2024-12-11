@@ -9,26 +9,19 @@ public:
 	~HDD ();
 
     bool writeSortedRuns(std::vector<Row> sorted_run);
-    void printSortedRuns();
     int getNumOfSortedRuns();
     std::vector<std::vector<Row> >& getSortedRuns();
-    void addBufferToMergedRun(std::vector<Row> mergedBuffer);
-    void printMergedRuns();
-    void appendMergedRunsToSortedRuns();
     void clearEmptySortedRuns();
-    // void moveSmallerRunToStart();
+
+    void addBufferToMergedRun(std::vector<Row> mergedBuffer);
+    void appendMergedRunsToSortedRuns();
 
     void addOutputBufferToSingleSortedRun(std::vector<Row> outputBuffer);
     void addSingleSortedRunToSortedRuns();
-    void printSingleSortedRun();
-
     std::vector<Row>& getSingleSortedRun();
-    bool isSingleSortedRunEmpty();
 
-    void printSortedRunsSize();
-
-    int getSpillCount();
     void addSingleSortedRunCountToSpillCount();
+    int getSpillCount();
 
 private:
     std::vector<std::vector<Row> > sorted_runs;
