@@ -38,7 +38,7 @@ bool ScanIterator::next(Row &row)
 {
 	TRACE(false);
 	if (_count >= _plan->_count) {
-        printf("DONE GENERATING\n");
+        // printf("DONE GENERATING\n");
         return false;
     }
 	

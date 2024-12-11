@@ -4,7 +4,7 @@
 #include "Sort.h"
 #include "Witness.h"
 #include <map>
-#include <cstdlib> // For std::atoi
+#include <cstdlib>
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -14,7 +14,6 @@ int main(int argc, char *argv[])
 	// Map to store arguments and their values
     std::map<std::string, std::string> argMap;
 
-    // Parse command-line arguments into the map
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg[0] == '-' && i + 1 < argc) {

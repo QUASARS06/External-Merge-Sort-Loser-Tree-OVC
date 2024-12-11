@@ -3,27 +3,43 @@
 #include "Filter.h"
 #include "Sort.h"
 #include "Witness.h"
+#include <map>
+#include <cstdlib>
+using namespace std;
 
 int main(int argc, char *argv[])
 {
 	TRACE(false);
 
+	// Map to store arguments and their values
+    std::map<std::string, std::string> argMap;
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg[0] == '-' && i + 1 < argc) {
+            argMap[arg] = argv[++i]; // Add flag and its value to the map
+        }
+    }
+
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 5 --------------------------------\n");
 	printf("Description : All Records are the same (see scan_type = 1 below)\n\n");
+	
+	// number of columns in each Row of Database Record
+	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;
 
-	int num_of_cols = 4;	// number of columns in each Row of Database Record
-	int col_val_domain = 10;		// Domain of the column values within a Row
+	// Domain of the column values within a Row
+	int col_val_domain = argMap.find("-d") != argMap.end() ? std::atoi(argMap["-d"].c_str()) : 10;
 
 
 	// filter variables
 	// below variables make the following filter : row.columns[col_num] |operator_type| value
 	//											   row.columns[0] > 3;
 	// allowed operators = '>'  '<'  '='
-	int col_num = 0;
-	int value = -1;
-	char operator_type = '>';
+	int col_num = argMap.find("-fc") != argMap.end() ? std::atoi(argMap["-fc"].c_str()) : 0;
+	int value = argMap.find("-fv") != argMap.end() ? std::atoi(argMap["-fv"].c_str()) : -1;
+	char operator_type = (argMap.find("-fo") != argMap.end() && !argMap["-fo"].empty()) ? argMap["-fo"][0] : '>';
 
 	if(col_num >= num_of_cols) {
 		printf("Column Number provided Out of Bounds (col_num should be <= %d)\n", (num_of_cols-1));
@@ -39,10 +55,15 @@ int main(int argc, char *argv[])
 
 
 	// RAM attributes
-	int ram_capacity = 2000;	// number of records that can be stored in RAM
-	int page_size = 400;		// page_size = 20 means 1 page can store 20 records
 
-	int num_of_records = 40000;		// Total number of Rows/Records to be generated
+	// number of records that can be stored in RAM
+	int ram_capacity = argMap.find("-r") != argMap.end() ? std::atoi(argMap["-r"].c_str()) : 2000;
+
+	// page_size = 20 means 1 page can store 20 records
+	int page_size = argMap.find("-p") != argMap.end() ? std::atoi(argMap["-p"].c_str()) : 400;
+
+	// Total number of Rows/Records to be generated
+	int num_of_records = argMap.find("-n") != argMap.end() ? std::atoi(argMap["-n"].c_str()) : 40000;
 
 	printf("\nNumber of Columns - %d\n", num_of_cols);
 	printf("Domain of Column Values - %d\n", col_val_domain);
@@ -69,7 +90,7 @@ int main(int argc, char *argv[])
 	// 5 - descending generated records
 	// 6 - all zeroes
 	// 7 - random negative records
-	int scan_type = 1;
+	int scan_type = argMap.find("-s") != argMap.end() ? std::atoi(argMap["-s"].c_str()) : 1;
 
 	Plan *const plan =
 		new WitnessPlan ("OUTPUT Witness",

@@ -12,7 +12,10 @@ A brief description of what this project does and who it's for.
 ### Run Individual Tests with Arguments
 Below table shows the arguments which can be passed to the Test program. A sample invocation to any test would look like this:
 
-> ./Test1.exe -p 400 -r 2000 -n 40000 -c 4 -d 7 -fc 0 -fv 1 -fo > -s 0
+> ./Test1.exe -p 400 -r 2000 -n 40000 -c 4 -d 7 -fc 0 -fv 1 -fo '>' -s 0  
+> ./Test1.exe -p 500 -r 20500 -n 22000 -c 5 -d 10 -fc 1 -fv 1 -fo '>' -s 0   
+
+Note: The filter operator needs to be wrapped by single quotes to avoid shell to interpret it as a redirection
 
 Above command runs Test1.exe with the following parameters:  
 * Page Size: 400 (records)
@@ -36,9 +39,9 @@ Filter evaluates to:
 | -n | Number of Rows | Total number of Rows/Records to be generated | Whole Number |
 | -c | Number of Columns | number of columns in each Row of Database Record | Positive Integer |
 | -d | Column Value Domain | Domain of the column values within a Row | Integer |
-| -fc | Filter Column Number | Syntax: row.columns[**col_num**] 'operator_type' value | 0-based column index lower than number of columns |
+| -fc | Filter Column Number | Syntax: row.columns[**'col_num'**] operator_type value | 0-based column index lower than number of columns |
 | -fv | Filter Value | Syntax: row.columns[col_num] **'operator_type'** value | Ideally would be within the Column value Domain but could be any integer |
-| -fo | Filter Operator | Syntax: row.columns[col_num] 'operator_type' **value** | Allowed operators: **'>'  '<'  '='** |
+| -fo | Filter Operator | Syntax: row.columns[col_num] operator_type **'value'** | Allowed operators: **'>'  '<'  '='** (needs to be wrapped by single quotes to avoid shell to interpret it as a redirection)|
 | -s | Scan Type | scan_type helps determine the type of random records to generate | 0-7 (see below for individual meaning) |
 
 Scan Type Values:  
