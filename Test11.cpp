@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
 
 	printf("------------------------------ Test 11 --------------------------------\n");
 	printf("Description : Many columns in each Row\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 70;

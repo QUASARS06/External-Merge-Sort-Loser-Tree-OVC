@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 13 --------------------------------\n");
-	printf("Description : All Column Values are same in a Row (see scan_type = 2 below)\n\n");
+	printf("Description : All Column Values are same in a Row (see scan_type = 2)\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;

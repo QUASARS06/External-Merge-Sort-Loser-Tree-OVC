@@ -24,9 +24,9 @@ public:
     int getSpillCount();
 
 private:
-    std::vector<std::vector<Row> > sorted_runs;
-    std::vector<Row> merged_run;
-    std::vector<Row> single_sorted_run;
+    std::vector<std::vector<Row> > sorted_runs; // represents the sorted runs on Disk
+    std::vector<Row> merged_run; // used when spilling Rows merged during merge steps
+    std::vector<Row> single_sorted_run; // used when spilling Rows sorted during internal sort
 
     int spill_count;
 

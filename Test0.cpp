@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
 
 	printf("------------------------------ Test 0 --------------------------------\n");
 	printf("Description : Generates random rows and applies basic filter\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;

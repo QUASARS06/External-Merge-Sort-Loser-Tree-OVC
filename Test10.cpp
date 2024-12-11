@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
 	srand(static_cast<unsigned int>(time(0)));
 
 	printf("------------------------------ Test 10 --------------------------------\n");
-	printf("Description : Random Negative Numbers (see scan_type = 7 below)\n\n");
+	printf("Description : Random Negative Numbers (see scan_type = 7)\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;

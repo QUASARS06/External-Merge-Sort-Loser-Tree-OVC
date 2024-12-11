@@ -18,7 +18,6 @@ public:
 	int offsetValue;
 
 	bool isLessThan(const Row& other, int& ct) const;
-    std::string findOVC(const Row& winner) const;
 
 private:
 	// ...

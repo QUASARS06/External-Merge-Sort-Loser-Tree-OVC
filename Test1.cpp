@@ -27,6 +27,10 @@ int main(int argc, char *argv[])
 	printf("Description : Illustrates the 1-step to n-step Graceful degradation\n");
 	printf("              No filter applied and small I and M as aim is to illustrate graceful degradation)\n");
 	printf("              With W = 23 and B = 10 the initial merge fan-in should be 5\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;

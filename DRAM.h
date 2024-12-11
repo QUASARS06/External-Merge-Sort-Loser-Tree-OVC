@@ -11,41 +11,38 @@ public:
 	~DRAM ();
 
     bool addRecord(Row record, HDD& hdd);
-    void flushRAM();
-
+    void sortPartiallyFilledRam(HDD& hdd);
+    
+    void sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N);
     void sortRecords(int sortingSize);
+
     void mergeSortedRuns(HDD& hdd);
-    void mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx, int X);
+    void mergeRuns(HDD& hdd, int sortedRunStIdx, int sortedRunEndIdx);
+
     void loadBufferFromRun(int runIndex, std::vector<Row>& run, int X);
-    bool isExhausted(int lastWinnerRunIdx, std::vector<int> currentIndices);
-    Row getNextSortedRow(HDD& hdd, int sortedRunStIdx, int X);
-    void prepareMergingTree(std::vector<std::vector<Row> >& sortedRuns, int sortedRunStIdx, int sortedRunEndIdx, int X);
+
+    void prepareMergingTree(std::vector<std::vector<Row> >& sortedRuns, int sortedRunStIdx, int sortedRunEndIdx);
     void cleanupMerging(HDD& hdd);
     TreeOfLosers& getMergingTree();
 
-    void sortInPlaceUsingSortIdx(std::vector<int> sortIdx, int N);
-
-    
-
-    void sortPartiallyFilledRam(HDD& hdd);
+    Row getNextSortedRow(HDD& hdd, int sortedRunStIdx);
 
     Row getSortedRowFromRAM();
     Row getRowFromSingleSortedRunOnHDD(HDD& hdd);
 
-    int outputBufferStIdx;
-    int outputBufferIdx;
-    int lastWinnerRunIdx;
-    std::vector<int> currentIndices;
-    std::unique_ptr<TreeOfLosers> mergingTree;
+    void flushRAM();
 
     int pass;
-    int ram_unsorted_ptr;
 
 private:
-    std::vector<Row> records;
+    std::vector<Row> records;   // actual RAM
     std::vector<Row> output_buffer;
+    std::unique_ptr<TreeOfLosers> mergingTree;
+    int ram_unsorted_ptr;
     int capacity; // represents the number of records that can be stored in RAM
     int page_size;
+    int lastWinnerRunIdx;
+    std::vector<int> currentIndices;
     
 
 }; // class DRAM

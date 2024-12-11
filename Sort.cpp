@@ -128,11 +128,10 @@ SortIterator::SortIterator (SortPlan const * const plan) :
 	printf("------------------------- Pass %d : Merging (%d sorted runs) -------------------------\n", dram->pass, hdd->getNumOfSortedRuns());
 
 	int mergingRunSt = 0;
-    // int mergingRunEnd = std::min(mergingRunSt + B, (int)W) - 1;
 	int mergingRunEnd = std::min(B, (int)hdd->getNumOfSortedRuns()) - 1;
 
 	// prepare tree for final merging
-	dram->prepareMergingTree(hdd->getSortedRuns(), mergingRunSt, mergingRunEnd, B);
+	dram->prepareMergingTree(hdd->getSortedRuns(), mergingRunSt, mergingRunEnd);
 
 } // SortIterator::SortIterator
 
@@ -174,11 +173,11 @@ bool SortIterator::next (Row & row)
 
 	// We use the final merging Tree of Losers created to get the sorted Records
 	else {
-		int totalBuffers = _plan->ram_capacity / _plan->page_size;
-		int B = totalBuffers - 1;
+		// int totalBuffers = _plan->ram_capacity / _plan->page_size;
+		// int B = totalBuffers - 1;
 
 		// gets it using the Tree of Losers
-		row = dram->getNextSortedRow(*hdd, 0, B);
+		row = dram->getNextSortedRow(*hdd, 0);
 	}
 
 	// If we get a row whose offsetValue is INT_MAX it means it is a Positive Fence Record

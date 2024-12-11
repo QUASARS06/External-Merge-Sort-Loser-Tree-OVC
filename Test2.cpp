@@ -31,6 +31,10 @@ int main(int argc, char *argv[])
 	printf("              creates one larger run while only spilling as little as\n");
 	printf("              necessary to accomodatethe additional 2000 records on top\n");
 	printf("              of Memory Size (M)\n\n");
+
+	if(!argMap.empty()) {
+		printf("---> Note: Since command line arguments passed, above description may not be valid anymore <---\n\n");
+	}
 	
 	// number of columns in each Row of Database Record
 	int num_of_cols = argMap.find("-c") != argMap.end() ? std::atoi(argMap["-c"].c_str()) : 4;

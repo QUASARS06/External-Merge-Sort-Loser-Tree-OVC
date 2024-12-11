@@ -1,22 +1,30 @@
 ## External Merge Sort Implementation
 
-A brief description of what this project does and who it's for.
+* Implementation of External Merge Sort by generating Database Rows and simulating how they would flow between HDD, RAM and CPU Cache for sorting.  
+* Uses Offset Value Coding (OVC) to minimize the number of column value comparisons to determine sort order between two records.  
+* Also uses a Tree of Losers Priority Queue to reduce the number of row comparisons. New winner can be determined with a single leaf to root pass with only a single comparison at each level (as compared to 2 comparisons in standard Priority Queues). Furthermore, with OVC usually a single integer comparison can sort two Rows.
+* Also implemented Cache Sized Runs while sorting the Rows in RAM.
+* Implemented Graceful Degradation (internal to external sort) to minimize the number of rows spilled to disk. We only spill the required number of sorted rows to accomodate additional input rows, instead of spilling an entire run once it is sorted. Usually the number of records spilled is (see output logs when running tests)
+    > number of passes (including initial sorting pass) * I.
+* Also implemented the 1-step to n-step Graceful Degradation which merges a certain 'X' runs at the start to fully utilize the 'B' RAM buffers in subsequent merge steps. Here, we always merge smaller runs first thus reducing the amount of I/O.
+* Implemented basic filter to filter out certain records based on filter condition (see usage below)
+* Implemented basic Witness Step which counts the number of records, parity and inversion in both Input and Output. Number of Records and Parity should be same in Input and Output Witness, while the number of inversions should be zero in the Output Witness.
 
 ### Run All Tests
 > make run_all
 
 ### Run Individual Tests with default values
-> ./Test1.exe  
-> ./Test2.exe
+> ./Test0.exe  
+> ./Test1.exe
 
 ### Run Individual Tests with Arguments
 Below table shows the arguments which can be passed to the Test program. A sample invocation to any test would look like this:
 
-> ./Test1.exe -p 400 -r 2000 -n 40000 -c 4 -d 7 -fc 0 -fv 1 -fo '>' -s 0  
+> ./Test0.exe -p 400 -r 2000 -n 40000 -c 4 -d 7 -fc 0 -fv 1 -fo '>' -s 0  
 
 Note: The filter operator needs to be wrapped by single quotes to avoid shell to interpret it as a redirection
 
-Above command runs Test1.exe with the following parameters:  
+Above command runs Test0.exe with the following parameters:  
 * Page Size: 400 (records)
 * RAM Capacity: 2,000 (records)
 * Number of Rows/Records: 20,000 (records)

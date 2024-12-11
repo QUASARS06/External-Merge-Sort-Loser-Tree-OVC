@@ -11,13 +11,21 @@ using namespace std;
 Row::Row(const std::vector<int>& columns, int offset, int offsetValue) : columns(columns), offset(offset), offsetValue(offsetValue) {}
 
 bool Row::isLessThan(const Row& other, int& ct) const {
+    // if offsets don't match then row with higher offset is earlier in sort sequence
     if (offset != other.offset) {
         return offset > other.offset;
     }
+
+    // if offsets match and offsetValues differ then row with lower offsetValue is earlier in sort sequence
     if (offsetValue != other.offsetValue) {
         return offsetValue < other.offsetValue;
     }
 
+    // Otherwise, additional data values in the two rows must be compared
+
+    // note that column value comparisons start after the offset
+    // since we know that since offsets match those column value comparisons will be redundant
+    // thus we save column value comparisons using OVC
     for (size_t i = offset+1; i < columns.size(); ++i) {
         ct++;
         if (columns[i] != other.columns[i]) {
@@ -27,20 +35,6 @@ bool Row::isLessThan(const Row& other, int& ct) const {
 
     return true;
 }
-
-std::string Row::findOVC(const Row& winner) const {
-    if(offsetValue == INT_MAX && winner.offsetValue == INT_MAX) {
-        return std::to_string(std::numeric_limits<int>::min()) + "@" + std::to_string(std::numeric_limits<int>::max());
-    }
-    for (size_t i = 0; i < winner.columns.size(); ++i) {
-        if (winner.columns[i] != columns[i]) {
-            return std::to_string(i) + "@" + std::to_string(columns[i]);
-        }
-    }
-    return std::to_string(winner.columns.size()) + "@" + std::to_string(winner.columns.back());
-}
-
-
 
 
 
@@ -95,11 +89,11 @@ LoserTreeNode::~LoserTreeNode () {}
  * indirection - (basically a pointer but in form of indexes) stores the index in RAM which the corresponding
  *               index in sortedRuns points to. In case of cached sized runs we use this indirection to store the
  *               sorted indexes in the indirection array. Example if RAM = [3 , 0 , 1] then indirection = [2 , 0 , 1]
- *               basically 0th index in indirection says that element 3 in RAM belongs at position 2 in sorted sequence
- *                         1st index in indirection says that element 0 in RAM belongs at positon 0 and so on
+ *               basically 0th index in indirection says that element 3 (index 0) in RAM belongs at index 2 in RAM
+ *                         in sorted sequence
+ *                         1st index in indirection says that element 0 (index 1) in RAM belongs at index 0 and so on
  * 
  */
-
 TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sortedRunSize, 
                            std::vector<int>& currentIndices, int& lastWinnerRunIdx, int sortedRunsIndexOffset, 
                            bool useIndirection, std::vector<int> indirection)
@@ -144,11 +138,12 @@ TreeOfLosers::TreeOfLosers(std::vector<Row>& sortedRuns, int pageSize, int sorte
     }
 }
 
+
 /**
  * For a give runIndex returns the row at the top of the run
  * the index of top of the run is determined using the currentIndices vector
  * Uses indirection if the useIndirection boolean is set
- * In case of out of bounds - run is out of bounds or index in run is out of bounds return MAX Row
+ * In case of out of bounds - if run is out of bounds or index in run is out of bounds return Positive Fence Row
  */
 Row& TreeOfLosers::getRow(int runIndex) {
     if(runIndex >= 0 && runIndex < numOfRuns) {
@@ -172,6 +167,7 @@ Row& TreeOfLosers::getRow(int runIndex) {
     return dummyRow;
 }
 
+
 /**
  * Recursively initialize the tournament tree by playing the initial matches between the runs
  * currNodeIdx - denotes the node in the tournament tree where match is being played
@@ -182,27 +178,42 @@ int TreeOfLosers::init(int currNodeIdx) {
     if (currNodeIdx > treeSize)
         return currNodeIdx;
 
+    // get LoserTreeNode index for the left and right child of current node to play tournament
     int leftChildIdx = 2 * currNodeIdx;
     int rightChildIdx = 2 * currNodeIdx + 1;
 
+    // stores the run indexes of the runs corresponding to a Row 
+    // which are going to compete at the current LoserTree Node
     int leftRunIdx = -1;
     int rightRunIdx = -1;
 
     if (leftChildIdx > treeSize) {
+        // if the LoserTreeNode index goes beyond the treeSize (number of nodes in the LoserTree)
+        // it means we are at leaf level, at this point we calculate the run indexes of run
+        // which will compete at that leaf node
+
         leftRunIdx = leftChildIdx - (numOfLoserNodes + 1);
         rightRunIdx = rightChildIdx - (numOfLoserNodes + 1);
     } else {
+        // if we are at any internal node then we recursively get the runIndexes of the winners
+        // from the left and right childs of the current node
+
         leftRunIdx = init(leftChildIdx);
         rightRunIdx = init(rightChildIdx);
     }
 
+    // get the actual rows based on the run indexes
     Row& leftRow = getRow(leftRunIdx);
     Row& rightRow = getRow(rightRunIdx);
 
     Row* loserRow = nullptr;
     int winnerRunIdx = -1, loserRunIdx = -1;
 
+    // the new offset of loser increases by the number of comparisons required to determine winner/loser
+    // and the new offsetValue is the value of loser row at that offset
+    // Hence we minimize the number of Column Value comparisons using OVC
     int comparisonsToDetermineLoser = 0;
+
     if (leftRow.isLessThan(rightRow, comparisonsToDetermineLoser)) {
         loserRow = &rightRow;
         winnerRunIdx = leftRunIdx;
@@ -215,90 +226,145 @@ int TreeOfLosers::init(int currNodeIdx) {
 
     if(comparisonsToDetermineLoser > 0) {
         int row_len = loserRow->columns.size();
-        
+
+        // new offset of loser increase by number of column value comparisons required to determine winner/loser    
         loserRow->offset += comparisonsToDetermineLoser;
+
+        // handles out of bounds (if it occurs)
         if(loserRow->offset > row_len) {
             loserRow->offset = row_len;
             loserRow->offsetValue = loserRow->columns.back();
         } else {
+            // new offsetValue is value at new offset
             loserRow->offsetValue = loserRow->columns[loserRow->offset];
         }
     }
 
+    // set the loserRunIdx at the current node
     loserTree[currNodeIdx].runIndex = loserRunIdx;
 
+    // pass the winnerRunIdx higher up in the LoserTree
     return winnerRunIdx;
 }
 
+
+/**
+ * Creates the Initial Tree of Losers
+ * By having the initial matches between top record in each Run competing
+ */
 void TreeOfLosers::initializeTree() {
     int winnerRunIdx = init(1);
     LoserTreeNode& overallWinner = loserTree[0];
     overallWinner.runIndex = winnerRunIdx;
 }
 
+
+/**
+ * Pops the root of the Tree of Losers
+ * Invokes a leaf-to-root pass to update the Tree of Losers
+ */
 Row TreeOfLosers::getNextRow() {
-    int winnerRunIdx = loserTree[0].runIndex;
-    Row& winnerRow = getRow(winnerRunIdx);
+    
+    int winnerRunIdx = loserTree[0].runIndex; // get the run index of winner from the LoserTree root
+    Row& winnerRow = getRow(winnerRunIdx);  // get actual row based on the index
 
     if (winnerRow.offsetValue == INT_MAX) return winnerRow;
 
-    currentIndices[winnerRunIdx] += 1;
-    updateTree(winnerRunIdx);
+    currentIndices[winnerRunIdx] += 1;  // increase the index for that run to point to next row in the run
+    updateTree(winnerRunIdx);   // update tree by doing a leaf to root pass to determine next winner
 
     lastWinnerRunIdx = winnerRunIdx;
     return winnerRow;
 }
 
+
+/**
+ * Performs a leaf to root pass to update the Tree of Losers to determine next winner
+ * competitorRunIndex is basically the runIndex of the run of the last winner
+ * The next Row in that run competes at the leaf and hence new winner is decided as we go from leaf to root
+ */
 void TreeOfLosers::updateTree(int competitorRunIndex) {
+    
+    // we get the index of LoserTreeNode (basically the leaf node) from which the matches are going to start
     int currLoserTreeNodeIndex = (competitorRunIndex + numOfLoserNodes + 1) / 2;
 
     while (currLoserTreeNodeIndex > 0) {
+        // this flag basically means that the Row present in the currLoserTreeNodeIndex which we are at
+        // whether is won or not
+        // if it won it means that it will go higher up in the loser tree and hence new row will be assigned to this LoserTreeNode
+        // but if it was still the loser then we don't do anything, we just update the OVC if required
         bool didCurrWin = false;
 
+        // every time a competitor (previous winner from child nodes) competes at each node while we move up the tree
         int currLoserTreeNodeRunIndex = loserTree[currLoserTreeNodeIndex].runIndex;
         Row& currRow = getRow(currLoserTreeNodeRunIndex);
         Row& competitorRow = getRow(competitorRunIndex);
 
+        // the new offset of loser increases by the number of comparisons required to determine winner/loser
+        // and the new offsetValue is the value of loser row at that offset
+        // Hence we minimize the number of Column Value comparisons using OVC
         int comparisonsToDetermineLoser = 0;
 
+        // use OVC to determine sort order between two rows
         if (currRow.isLessThan(competitorRow, comparisonsToDetermineLoser)) {
+            // currRow - Winner
+            // competitorRow - Loser
             didCurrWin = true;
         }
 
         if (didCurrWin) {
+            // currRow - Winner
+            // competitorRow - Loser
+
+            // if Row in current LoserTreeNode won then it will go higher up in the tree
+            // and the competitor which is the loser will be assigned to this Node
+            // OVC will be updated for the loser if required
             loserTree[currLoserTreeNodeIndex].runIndex = competitorRunIndex;
 
             if(comparisonsToDetermineLoser > 0) {
                 int row_len = competitorRow.columns.size();
                 
+                // new offset of loser increase by number of column value comparisons required to determine winner/loser
                 competitorRow.offset += comparisonsToDetermineLoser;
+
+                // handles out of bounds (if it occurs)
                 if(competitorRow.offset > row_len) {
                     competitorRow.offset = row_len;
                     competitorRow.offsetValue = competitorRow.columns.back();
                 } else {
+                    // new offsetValue is value at new offset
                     competitorRow.offsetValue = competitorRow.columns[competitorRow.offset];
                 }
             }
 
             competitorRunIndex = currLoserTreeNodeRunIndex;
         } else {
-            
+            // currRow - Loser
+            // competitorRow - Winner
+
+            // if Row in current LoserTreeNode lost again then we just update OVC if required
             if(comparisonsToDetermineLoser > 0) {
                 int row_len = currRow.columns.size();
                 
+                // new offset of loser increase by number of column value comparisons required to determine winner/loser
                 currRow.offset += comparisonsToDetermineLoser;
+
+                // handles out of bounds (if it occurs)
                 if(currRow.offset > row_len) {
                     currRow.offset = row_len;
                     currRow.offsetValue = currRow.columns.back();
                 } else {
+                    // new offsetValue is value at new offset
                     currRow.offsetValue = currRow.columns[currRow.offset];
                 }
             }
 
         }
 
+        // move up to parent node in the LoserTree
         currLoserTreeNodeIndex /= 2;
     }
 
+    // Set Overall Winner in the Root of the LoserTree
     loserTree[currLoserTreeNodeIndex].runIndex = competitorRunIndex;
 }
