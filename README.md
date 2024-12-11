@@ -11,6 +11,7 @@
 * Implemented basic Witness Step which counts the number of records, parity and inversion in both Input and Output. Number of Records and Parity should be same in Input and Output Witness, while the number of inversions should be zero in the Output Witness.
 
 ### Run All Tests
+Total Number of Tests = 15 (Test0.exe to Test14.exe)
 > make run_all
 
 ### Run Individual Tests with default values
